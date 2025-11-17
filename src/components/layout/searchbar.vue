@@ -15,7 +15,7 @@
           :value="props.modelValue"
           @input="onInput($event)"
           placeholder="Busca tu anime favorito..."
-          class="flex-1 bg-transparent text-black placeholder:text-black/60 focus:outline-none text-lg text-center"
+          class="flex-1 bg-transparent text-black placeholder:text-black/60 focus:outline-none text-lg text-center select-none"
           aria-label="Buscar anime"
         />
       </div>
