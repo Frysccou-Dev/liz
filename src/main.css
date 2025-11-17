@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+@theme {
+  --color-anime-g-50: #f4f9f5;
+  --color-anime-g-100: #e5f3ea;
+  --color-anime-g-200: #cee8d8;
+  --color-anime-g-300: #a2d3b6;
+  --color-anime-g-400: #72b68d;
+  --color-anime-g-500: #4e996d;
+  --color-anime-g-600: #3c7d56;
+  --color-anime-g-700: #326346;
+  --color-anime-g-800: #2b503a;
+  --color-anime-g-900: #254232;
+  --color-anime-p-50: #faf5f9;
+  --color-anime-p-100: #f7ecf5;
+  --color-anime-p-200: #f0daeb;
+  --color-anime-p-300: #e3bada;
+  --color-anime-p-400: #d393c3;
+  --color-anime-p-500: #c272ad;
+}
+
+@font-face {
+  font-family: "Chillax";
+  src: url("./assets/fonts/chillax/Chillax-Variable.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Sligoil Micro";
+  src: url("./assets/fonts/sligoil/Sligoil-Micro.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Sligoil Micro";
+  src: url("./assets/fonts/sligoil/Sligoil-MicroMedium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Sligoil Micro";
+  src: url("./assets/fonts/sligoil/Sligoil-MicroBold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Lithops";
+  src: url("./assets/fonts/lithops/Lithops-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+*,
+html {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Chillax", sans-serif;
+}
+
+h1 {
+  font-family: "Lithops", sans-serif;
+  letter-spacing: 20px;
+}
