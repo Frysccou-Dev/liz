@@ -23,13 +23,13 @@ export function useAnimeList() {
   const animeList = computed(() => state.value.animes);
   const errorMessage = computed(() => state.value.error?.message || null);
 
-  const fetchPopular = async (page: number = 1, perPage: number = 10) => {
+  const fetchPopular = async (page: number = 1, perPage: number = 6) => {
     state.value.loading = true;
     state.value.error = null;
 
     try {
       const results = await aniListService.getPopularAnime(page, perPage);
-      state.value.animes = results;
+      state.value.animes = [...results];
       state.value.page = page;
     } catch (err) {
       state.value.error = err as AniListError;
@@ -38,13 +38,73 @@ export function useAnimeList() {
     }
   };
 
-  const fetchTrending = async (page: number = 1, perPage: number = 10) => {
+  const fetchPopularThisSeason = async (page: number = 1, perPage: number = 6) => {
+    state.value.loading = true;
+    state.value.error = null;
+
+    try {
+      const results = await aniListService.getPopularThisSeason(page, perPage);
+      state.value.animes = [...results];
+      state.value.page = page;
+    } catch (err) {
+      state.value.error = err as AniListError;
+    } finally {
+      state.value.loading = false;
+    }
+  };
+
+  const fetchTrending = async (page: number = 1, perPage: number = 6) => {
     state.value.loading = true;
     state.value.error = null;
 
     try {
       const results = await aniListService.getTrendingAnime(page, perPage);
-      state.value.animes = results;
+      state.value.animes = [...results];
+      state.value.page = page;
+    } catch (err) {
+      state.value.error = err as AniListError;
+    } finally {
+      state.value.loading = false;
+    }
+  };
+
+  const fetchUpcomingNextSeason = async (page: number = 1, perPage: number = 6) => {
+    state.value.loading = true;
+    state.value.error = null;
+
+    try {
+      const results = await aniListService.getUpcomingNextSeason(page, perPage);
+      state.value.animes = [...results];
+      state.value.page = page;
+    } catch (err) {
+      state.value.error = err as AniListError;
+    } finally {
+      state.value.loading = false;
+    }
+  };
+
+  const fetchAllTimePopular = async (page: number = 1, perPage: number = 6) => {
+    state.value.loading = true;
+    state.value.error = null;
+
+    try {
+      const results = await aniListService.getAllTimePopular(page, perPage);
+      state.value.animes = [...results];
+      state.value.page = page;
+    } catch (err) {
+      state.value.error = err as AniListError;
+    } finally {
+      state.value.loading = false;
+    }
+  };
+
+  const fetchRecommended = async (page: number = 1, perPage: number = 6) => {
+    state.value.loading = true;
+    state.value.error = null;
+
+    try {
+      const results = await aniListService.getRecommendedAnime(page, perPage);
+      state.value.animes = [...results];
       state.value.page = page;
     } catch (err) {
       state.value.error = err as AniListError;
@@ -65,7 +125,11 @@ export function useAnimeList() {
     error: hasError,
     errorMessage,
     fetchPopular,
+    fetchPopularThisSeason,
     fetchTrending,
+    fetchUpcomingNextSeason,
+    fetchAllTimePopular,
+    fetchRecommended,
     reset,
   };
 }

@@ -14,6 +14,7 @@ interface Anime {
     native?: string;
   };
   coverImage: {
+    extraLarge: string;
     large: string;
     medium: string;
   };
@@ -97,7 +98,7 @@ class AniListService {
     }
   }
 
-  async getPopularAnime(page: number = 1, perPage: number = 10): Promise<Anime[]> {
+  async getPopularAnime(page: number = 1, perPage: number = 5): Promise<Anime[]> {
     try {
       const response = await this.client.post<AniListAnimeResponse>("", {
         query: `
@@ -140,7 +141,51 @@ class AniListService {
     }
   }
 
-  async getTrendingAnime(page: number = 1, perPage: number = 10): Promise<Anime[]> {
+  async getPopularThisSeason(page: number = 1, perPage: number = 6): Promise<Anime[]> {
+    try {
+      const response = await this.client.post<AniListAnimeResponse>("", {
+        query: `
+          query {
+            Page(page: ${page}, perPage: ${perPage}) {
+              pageInfo {
+                hasNextPage
+                total
+              }
+              media(type: ANIME, season: FALL, seasonYear: 2025, sort: POPULARITY_DESC) {
+                id
+                title {
+                  romaji
+                  english
+                  native
+                }
+                coverImage {
+                  extraLarge
+                  large
+                  medium
+                }
+                description
+                averageScore
+                popularity
+                episodes
+                season
+                seasonYear
+                status
+              }
+            }
+          }
+        `,
+      });
+
+      if (response.data.data.Page.media) {
+        return response.data.data.Page.media;
+      }
+      return [];
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async getTrendingAnime(page: number = 1, perPage: number = 6): Promise<Anime[]> {
     try {
       const response = await this.client.post<AniListAnimeResponse>("", {
         query: `
@@ -151,6 +196,138 @@ class AniListService {
                 total
               }
               media(type: ANIME, sort: TRENDING_DESC) {
+                id
+                title {
+                  romaji
+                  english
+                  native
+                }
+                coverImage {
+                  extraLarge
+                  large
+                  medium
+                }
+                description
+                averageScore
+                popularity
+                episodes
+                season
+                seasonYear
+                status
+              }
+            }
+          }
+        `,
+      });
+
+      if (response.data.data.Page.media) {
+        return response.data.data.Page.media;
+      }
+      return [];
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async getUpcomingNextSeason(page: number = 1, perPage: number = 6): Promise<Anime[]> {
+    try {
+      const response = await this.client.post<AniListAnimeResponse>("", {
+        query: `
+          query {
+            Page(page: ${page}, perPage: ${perPage}) {
+              pageInfo {
+                hasNextPage
+                total
+              }
+              media(type: ANIME, season: WINTER, seasonYear: 2026, sort: POPULARITY_DESC) {
+                id
+                title {
+                  romaji
+                  english
+                  native
+                }
+                coverImage {
+                  extraLarge
+                  large
+                  medium
+                }
+                description
+                averageScore
+                popularity
+                episodes
+                season
+                seasonYear
+                status
+              }
+            }
+          }
+        `,
+      });
+
+      if (response.data.data.Page.media) {
+        return response.data.data.Page.media;
+      }
+      return [];
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async getAllTimePopular(page: number = 1, perPage: number = 6): Promise<Anime[]> {
+    try {
+      const response = await this.client.post<AniListAnimeResponse>("", {
+        query: `
+          query {
+            Page(page: ${page}, perPage: ${perPage}) {
+              pageInfo {
+                hasNextPage
+                total
+              }
+              media(type: ANIME, sort: POPULARITY_DESC) {
+                id
+                title {
+                  romaji
+                  english
+                  native
+                }
+                coverImage {
+                  extraLarge
+                  large
+                  medium
+                }
+                description
+                averageScore
+                popularity
+                episodes
+                season
+                seasonYear
+                status
+              }
+            }
+          }
+        `,
+      });
+
+      if (response.data.data.Page.media) {
+        return response.data.data.Page.media;
+      }
+      return [];
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async getRecommendedAnime(page: number = 1, perPage: number = 6): Promise<Anime[]> {
+    try {
+      const response = await this.client.post<AniListAnimeResponse>("", {
+        query: `
+          query {
+            Page(page: ${page}, perPage: ${perPage}) {
+              pageInfo {
+                hasNextPage
+                total
+              }
+              media(type: ANIME, sort: SCORE_DESC) {
                 id
                 title {
                   romaji
