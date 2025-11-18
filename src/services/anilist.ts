@@ -39,15 +39,63 @@ interface AniListAnimeResponse {
   };
 }
 
+interface CacheEntry {
+  data: Anime[];
+  timestamp: number;
+}
+
 class AniListService {
   private client: AxiosInstance;
-  private baseURL = "https://graphql.anilist.co";
+  private baseURL = import.meta.env.DEV ? "/api" : "https://graphql.anilist.co";
+  private readonly CACHE_DURATION = 30 * 60 * 1000;
+  private readonly STORAGE_PREFIX = "anilist_cache_";
 
   constructor() {
     this.client = axios.create({
       baseURL: this.baseURL,
       timeout: 10000,
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
+  }
+
+  private generateCacheKey(method: string, page: number, perPage: number, search?: string): string {
+    return `${method}:${page}:${perPage}${search ? `:${search}` : ""}`;
+  }
+
+  private isCacheValid(timestamp: number): boolean {
+    return Date.now() - timestamp < this.CACHE_DURATION;
+  }
+
+  private getCachedData(key: string): Anime[] | null {
+    try {
+      const storageKey = this.STORAGE_PREFIX + key;
+      const cached = localStorage.getItem(storageKey);
+      if (!cached) return null;
+
+      const entry: CacheEntry = JSON.parse(cached);
+      if (this.isCacheValid(entry.timestamp)) {
+        return entry.data;
+      }
+      localStorage.removeItem(storageKey);
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  private setCacheData(key: string, data: Anime[]): void {
+    try {
+      const storageKey = this.STORAGE_PREFIX + key;
+      const entry: CacheEntry = {
+        data,
+        timestamp: Date.now(),
+      };
+      localStorage.setItem(storageKey, JSON.stringify(entry));
+    } catch {
+      // Fail silently if localStorage is unavailable
+    }
   }
 
   private getQueryString(page: number = 1, perPage: number = 10, search?: string): string {
@@ -85,11 +133,16 @@ class AniListService {
 
   async searchAnime(query: string, page: number = 1, perPage: number = 10): Promise<Anime[]> {
     try {
+      const cacheKey = this.generateCacheKey("search", page, perPage, query);
+      const cached = this.getCachedData(cacheKey);
+      if (cached) return cached;
+
       const response = await this.client.post<AniListAnimeResponse>("", {
         query: this.getQueryString(page, perPage, query),
       });
 
       if (response.data.data.Page.media) {
+        this.setCacheData(cacheKey, response.data.data.Page.media);
         return response.data.data.Page.media;
       }
       return [];
@@ -100,6 +153,10 @@ class AniListService {
 
   async getPopularAnime(page: number = 1, perPage: number = 5): Promise<Anime[]> {
     try {
+      const cacheKey = this.generateCacheKey("popular", page, perPage);
+      const cached = this.getCachedData(cacheKey);
+      if (cached) return cached;
+
       const response = await this.client.post<AniListAnimeResponse>("", {
         query: `
           query {
@@ -133,6 +190,7 @@ class AniListService {
       });
 
       if (response.data.data.Page.media) {
+        this.setCacheData(cacheKey, response.data.data.Page.media);
         return response.data.data.Page.media;
       }
       return [];
@@ -143,6 +201,10 @@ class AniListService {
 
   async getPopularThisSeason(page: number = 1, perPage: number = 6): Promise<Anime[]> {
     try {
+      const cacheKey = this.generateCacheKey("popularSeason", page, perPage);
+      const cached = this.getCachedData(cacheKey);
+      if (cached) return cached;
+
       const response = await this.client.post<AniListAnimeResponse>("", {
         query: `
           query {
@@ -177,6 +239,7 @@ class AniListService {
       });
 
       if (response.data.data.Page.media) {
+        this.setCacheData(cacheKey, response.data.data.Page.media);
         return response.data.data.Page.media;
       }
       return [];
@@ -187,6 +250,10 @@ class AniListService {
 
   async getTrendingAnime(page: number = 1, perPage: number = 6): Promise<Anime[]> {
     try {
+      const cacheKey = this.generateCacheKey("trending", page, perPage);
+      const cached = this.getCachedData(cacheKey);
+      if (cached) return cached;
+
       const response = await this.client.post<AniListAnimeResponse>("", {
         query: `
           query {
@@ -221,6 +288,7 @@ class AniListService {
       });
 
       if (response.data.data.Page.media) {
+        this.setCacheData(cacheKey, response.data.data.Page.media);
         return response.data.data.Page.media;
       }
       return [];
@@ -231,6 +299,10 @@ class AniListService {
 
   async getUpcomingNextSeason(page: number = 1, perPage: number = 6): Promise<Anime[]> {
     try {
+      const cacheKey = this.generateCacheKey("upcoming", page, perPage);
+      const cached = this.getCachedData(cacheKey);
+      if (cached) return cached;
+
       const response = await this.client.post<AniListAnimeResponse>("", {
         query: `
           query {
@@ -265,6 +337,7 @@ class AniListService {
       });
 
       if (response.data.data.Page.media) {
+        this.setCacheData(cacheKey, response.data.data.Page.media);
         return response.data.data.Page.media;
       }
       return [];
@@ -275,6 +348,10 @@ class AniListService {
 
   async getAllTimePopular(page: number = 1, perPage: number = 6): Promise<Anime[]> {
     try {
+      const cacheKey = this.generateCacheKey("allPopular", page, perPage);
+      const cached = this.getCachedData(cacheKey);
+      if (cached) return cached;
+
       const response = await this.client.post<AniListAnimeResponse>("", {
         query: `
           query {
@@ -309,6 +386,7 @@ class AniListService {
       });
 
       if (response.data.data.Page.media) {
+        this.setCacheData(cacheKey, response.data.data.Page.media);
         return response.data.data.Page.media;
       }
       return [];
@@ -319,6 +397,10 @@ class AniListService {
 
   async getRecommendedAnime(page: number = 1, perPage: number = 6): Promise<Anime[]> {
     try {
+      const cacheKey = this.generateCacheKey("recommended", page, perPage);
+      const cached = this.getCachedData(cacheKey);
+      if (cached) return cached;
+
       const response = await this.client.post<AniListAnimeResponse>("", {
         query: `
           query {
@@ -352,11 +434,25 @@ class AniListService {
       });
 
       if (response.data.data.Page.media) {
+        this.setCacheData(cacheKey, response.data.data.Page.media);
         return response.data.data.Page.media;
       }
       return [];
     } catch (error) {
       throw this.handleError(error);
+    }
+  }
+
+  clearCache(): void {
+    try {
+      const keys = Object.keys(localStorage);
+      keys.forEach((key) => {
+        if (key.startsWith(this.STORAGE_PREFIX)) {
+          localStorage.removeItem(key);
+        }
+      });
+    } catch {
+      // Fail silently if localStorage is unavailable
     }
   }
 

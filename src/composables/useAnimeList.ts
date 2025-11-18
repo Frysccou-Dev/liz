@@ -33,6 +33,9 @@ export function useAnimeList() {
       state.value.page = page;
     } catch (err) {
       state.value.error = err as AniListError;
+      if ((err as AniListError).status === 429) {
+        window.showRateLimitModal(10000);
+      }
     } finally {
       state.value.loading = false;
     }
@@ -48,6 +51,9 @@ export function useAnimeList() {
       state.value.page = page;
     } catch (err) {
       state.value.error = err as AniListError;
+      if ((err as AniListError).status === 429) {
+        window.showRateLimitModal(10000);
+      }
     } finally {
       state.value.loading = false;
     }
@@ -63,6 +69,9 @@ export function useAnimeList() {
       state.value.page = page;
     } catch (err) {
       state.value.error = err as AniListError;
+      if ((err as AniListError).status === 429) {
+        window.showRateLimitModal(10000);
+      }
     } finally {
       state.value.loading = false;
     }
@@ -78,6 +87,9 @@ export function useAnimeList() {
       state.value.page = page;
     } catch (err) {
       state.value.error = err as AniListError;
+      if ((err as AniListError).status === 429) {
+        window.showRateLimitModal(10000);
+      }
     } finally {
       state.value.loading = false;
     }
@@ -93,6 +105,9 @@ export function useAnimeList() {
       state.value.page = page;
     } catch (err) {
       state.value.error = err as AniListError;
+      if ((err as AniListError).status === 429) {
+        window.showRateLimitModal(10000);
+      }
     } finally {
       state.value.loading = false;
     }
@@ -108,6 +123,9 @@ export function useAnimeList() {
       state.value.page = page;
     } catch (err) {
       state.value.error = err as AniListError;
+      if ((err as AniListError).status === 429) {
+        window.showRateLimitModal(10000);
+      }
     } finally {
       state.value.loading = false;
     }

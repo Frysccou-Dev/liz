@@ -17,9 +17,11 @@ import AnimeCard from "@/components/ui/anime-card.vue";
 import { useAnimeList } from "@/composables/useAnimeList";
 
 const { animes, fetchUpcomingNextSeason } = useAnimeList();
+const emit = defineEmits<{ loaded: [] }>();
 
-onMounted(() => {
-  fetchUpcomingNextSeason(1, 6);
+onMounted(async () => {
+  await fetchUpcomingNextSeason(1, 6);
+  emit("loaded");
 });
 </script>
 

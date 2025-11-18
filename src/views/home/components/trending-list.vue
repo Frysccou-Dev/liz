@@ -17,9 +17,11 @@ import AnimeCard from "@/components/ui/anime-card.vue";
 import { useAnimeList } from "@/composables/useAnimeList";
 
 const { animes, fetchPopularThisSeason } = useAnimeList();
+const emit = defineEmits<{ loaded: [] }>();
 
-onMounted(() => {
-  fetchPopularThisSeason(1, 6);
+onMounted(async () => {
+  await fetchPopularThisSeason(1, 6);
+  emit("loaded");
 });
 </script>
 
