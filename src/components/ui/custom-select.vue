@@ -25,7 +25,7 @@
     >
       <div
         v-if="isOpen"
-        class="absolute top-full left-0 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden"
+        class="absolute top-full left-0 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-9999 overflow-hidden"
       >
         <div class="max-h-60 overflow-y-auto py-1 custom-scrollbar">
           <div

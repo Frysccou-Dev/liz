@@ -11,7 +11,7 @@
             class="absolute inset-0 border-2 border-transparent border-t-gray-900 rounded-full animate-spin"
           ></div>
         </div>
-        <p class="text-sm text-gray-600 font-light tracking-wide">Cargando...</p>
+        <p class="text-sm text-gray-600 font-light tracking-wide">Loading...</p>
       </div>
     </div>
   </Transition>

@@ -22,20 +22,71 @@ interface Anime {
   averageScore?: number;
   popularity?: number;
   episodes?: number;
+  duration?: number;
   season?: string;
   seasonYear?: number;
   status?: string;
+  type?: string;
+  format?: string;
+  genres?: string[];
+  bannerImage?: string;
+  studios?: {
+    nodes: {
+      name: string;
+    }[];
+  };
+  startDate?: {
+    year: number;
+    month: number;
+    day: number;
+  };
+  endDate?: {
+    year: number;
+    month: number;
+    day: number;
+  };
+  characters?: {
+    edges: {
+      role: string;
+      node: {
+        id: number;
+        name: {
+          full: string;
+        };
+        image: {
+          large: string;
+        };
+      };
+    }[];
+  };
+  relations?: {
+    edges: {
+      relationType: string;
+      node: Anime;
+    }[];
+  };
+  recommendations?: {
+    nodes: {
+      mediaRecommendation: Anime;
+    }[];
+  };
+  nextAiringEpisode?: {
+    airingAt: number;
+    timeUntilAiring: number;
+    episode: number;
+  };
 }
 
 interface AniListAnimeResponse {
   data: {
-    Page: {
+    Page?: {
       pageInfo: {
         hasNextPage: boolean;
         total: number;
       };
       media: Anime[];
     };
+    Media?: Anime;
   };
 }
 
@@ -57,7 +108,7 @@ class AniListService {
   private client: AxiosInstance;
   private baseURL = import.meta.env.DEV ? "/api" : "https://graphql.anilist.co";
   private readonly CACHE_DURATION = 30 * 60 * 1000;
-  private readonly STORAGE_PREFIX = "anilist_cache_v2_";
+  private readonly STORAGE_PREFIX = "anilist_cache_v3_";
 
   constructor() {
     this.client = axios.create({
@@ -150,9 +201,10 @@ class AniListService {
         query: this.getQueryString(page, perPage, query),
       });
 
-      if (response.data.data.Page.media) {
-        this.setCacheData(cacheKey, response.data.data.Page.media);
-        return response.data.data.Page.media;
+      const dataPage = response.data.data.Page;
+      if (dataPage?.media) {
+        this.setCacheData(cacheKey, dataPage.media);
+        return dataPage.media;
       }
       return [];
     } catch (error) {
@@ -198,9 +250,10 @@ class AniListService {
         `,
       });
 
-      if (response.data.data.Page.media) {
-        this.setCacheData(cacheKey, response.data.data.Page.media);
-        return response.data.data.Page.media;
+      const dataPage = response.data.data.Page;
+      if (dataPage?.media) {
+        this.setCacheData(cacheKey, dataPage.media);
+        return dataPage.media;
       }
       return [];
     } catch (error) {
@@ -247,9 +300,10 @@ class AniListService {
         `,
       });
 
-      if (response.data.data.Page.media) {
-        this.setCacheData(cacheKey, response.data.data.Page.media);
-        return response.data.data.Page.media;
+      const dataPage = response.data.data.Page;
+      if (dataPage?.media) {
+        this.setCacheData(cacheKey, dataPage.media);
+        return dataPage.media;
       }
       return [];
     } catch (error) {
@@ -296,9 +350,10 @@ class AniListService {
         `,
       });
 
-      if (response.data.data.Page.media) {
-        this.setCacheData(cacheKey, response.data.data.Page.media);
-        return response.data.data.Page.media;
+      const dataPage = response.data.data.Page;
+      if (dataPage?.media) {
+        this.setCacheData(cacheKey, dataPage.media);
+        return dataPage.media;
       }
       return [];
     } catch (error) {
@@ -345,9 +400,10 @@ class AniListService {
         `,
       });
 
-      if (response.data.data.Page.media) {
-        this.setCacheData(cacheKey, response.data.data.Page.media);
-        return response.data.data.Page.media;
+      const dataPage = response.data.data.Page;
+      if (dataPage?.media) {
+        this.setCacheData(cacheKey, dataPage.media);
+        return dataPage.media;
       }
       return [];
     } catch (error) {
@@ -394,9 +450,10 @@ class AniListService {
         `,
       });
 
-      if (response.data.data.Page.media) {
-        this.setCacheData(cacheKey, response.data.data.Page.media);
-        return response.data.data.Page.media;
+      const dataPage = response.data.data.Page;
+      if (dataPage?.media) {
+        this.setCacheData(cacheKey, dataPage.media);
+        return dataPage.media;
       }
       return [];
     } catch (error) {
@@ -442,9 +499,10 @@ class AniListService {
         `,
       });
 
-      if (response.data.data.Page.media) {
-        this.setCacheData(cacheKey, response.data.data.Page.media);
-        return response.data.data.Page.media;
+      const dataPage = response.data.data.Page;
+      if (dataPage?.media) {
+        this.setCacheData(cacheKey, dataPage.media);
+        return dataPage.media;
       }
       return [];
     } catch (error) {
@@ -517,6 +575,8 @@ class AniListService {
       if (filters.genre && filters.genre.length > 0) {
         const genres = filters.genre.map((g) => `"${g}"`).join(", ");
         queryParts.push(`genre_in: [${genres}]`);
+      } else {
+        queryParts.push(`genre_not_in: ["Hentai"]`);
       }
       if (filters.year) queryParts.push(`seasonYear: ${filters.year}`);
       if (filters.season) queryParts.push(`season: ${filters.season}`);
@@ -563,11 +623,121 @@ class AniListService {
         `,
       });
 
-      if (response.data.data.Page.media) {
-        this.setCacheData(cacheKey, response.data.data.Page.media);
-        return response.data.data.Page.media;
+      const dataPage = response.data.data.Page;
+      if (dataPage?.media) {
+        this.setCacheData(cacheKey, dataPage.media);
+        return dataPage.media;
       }
       return [];
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+  async getAnimeById(id: number): Promise<Anime> {
+    try {
+      const cacheKey = this.generateCacheKey("anime_detail", id, 1);
+      const cached = this.getCachedData<Anime>(cacheKey);
+      if (cached) return cached;
+
+      const response = await this.client.post<AniListAnimeResponse>("", {
+        query: `
+          query {
+            Media(id: ${id}, type: ANIME) {
+              id
+              title {
+                romaji
+                english
+                native
+              }
+              coverImage {
+                extraLarge
+                large
+                medium
+              }
+              bannerImage
+              description
+              averageScore
+              popularity
+              episodes
+              duration
+              season
+              seasonYear
+              status
+              format
+              genres
+              studios {
+                nodes {
+                  name
+                }
+              }
+              startDate {
+                year
+                month
+                day
+              }
+              endDate {
+                year
+                month
+                day
+              }
+              characters(sort: ROLE, perPage: 10) {
+                edges {
+                  role
+                  node {
+                    id
+                    name {
+                      full
+                    }
+                    image {
+                      large
+                    }
+                  }
+                }
+              }
+              relations {
+                edges {
+                  relationType
+                  node {
+                    id
+                    title {
+                      romaji
+                    }
+                    coverImage {
+                      medium
+                    }
+                    type
+                  }
+                }
+              }
+              recommendations(perPage: 7, sort: RATING_DESC) {
+                nodes {
+                  mediaRecommendation {
+                    id
+                    title {
+                      romaji
+                    }
+                    coverImage {
+                      large
+                    }
+                    type
+                  }
+                }
+              }
+              nextAiringEpisode {
+                airingAt
+                timeUntilAiring
+                episode
+              }
+            }
+          }
+        `,
+      });
+
+      if (response.data.data.Media) {
+        this.setCacheData(cacheKey, response.data.data.Media);
+        return response.data.data.Media;
+      }
+      throw new Error("Anime not found");
     } catch (error) {
       throw this.handleError(error);
     }

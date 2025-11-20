@@ -2,7 +2,7 @@
   <section class="w-full py-16">
     <div class="flex flex-col px-12 items-center">
       <div class="flex flex-col items-center gap-3 mb-12">
-        <h2 class="text-2xl font-light text-gray-900 tracking-wider">Mis Recomendaciones</h2>
+        <h2 class="text-2xl font-light text-gray-900 tracking-wider">My Recommendations</h2>
         <div class="w-16 h-px bg-linear-to-r from-transparent via-gray-900 to-transparent"></div>
       </div>
 
@@ -42,7 +42,7 @@
               <div>
                 <h3 class="text-xl font-light text-gray-900 mb-2">{{ currentAnime.title }}</h3>
                 <div class="flex gap-4 text-sm text-gray-600">
-                  <span v-if="currentAnime.episodes">{{ currentAnime.episodes }} episodios</span>
+                  <span v-if="currentAnime.episodes">{{ currentAnime.episodes }} episodes</span>
                   <span v-if="currentAnime.status">{{ translateStatus(currentAnime.status) }}</span>
                 </div>
               </div>
@@ -89,10 +89,10 @@ const currentAnime = computed(() => recommendedAnimes.value[selectedIndex.value]
 
 const translateStatus = (status: string): string => {
   const translations: { [key: string]: string } = {
-    FINISHED: "Finalizado",
-    RELEASING: "Emitiendo",
-    NOT_YET_RELEASED: "Por emitir",
-    CANCELLED: "Cancelado",
+    FINISHED: "Finished",
+    RELEASING: "Airing",
+    NOT_YET_RELEASED: "Not Yet Aired",
+    CANCELLED: "Cancelled",
   };
   return translations[status] || status;
 };
@@ -100,59 +100,59 @@ const translateStatus = (status: string): string => {
 const animeData = [
   {
     title: "Alya Sometimes Hides Her Feelings in Russian",
-    whyRecommended: "Romántica y encantadora, perfecta para disfrutar momentos tiernos",
+    whyRecommended: "Romantic and charming, perfect for enjoying tender moments",
     description:
-      "Alya es una hermosa chica rusa que siempre oculta sus verdaderos sentimientos, mientras que Masachika es un estudiante ordinario que ve a través de su máscara. Una historia de romance llena de momentos adorables.",
+      "Alya is a beautiful Russian girl who always hides her true feelings, while Masachika is an ordinary student who sees through her mask. A romance story full of adorable moments.",
     image: new URL("@/assets/recommendations/alya.webp", import.meta.url).href,
   },
   {
     title: "Classroom of the Elite",
-    whyRecommended: "Estrategia y psicología, te mantiene pensando",
+    whyRecommended: "Strategy and psychology, keeps you thinking",
     description:
-      "Una escuela de élite donde los estudiantes son clasificados por habilidad. Ayanokoji, un estudiante excepcional, navega el complejo sistema social mientras revela sus verdaderas capacidades.",
+      "An elite school where students are ranked by ability. Ayanokoji, an exceptional student, navigates the complex social system while revealing his true capabilities.",
     image: new URL("@/assets/recommendations/cote.jpg", import.meta.url).href,
   },
   {
     title: "Gachiakuta",
-    whyRecommended: "Worldbuilding único y personajes memorables",
+    whyRecommended: "Unique worldbuilding and memorable characters",
     description:
-      "En un futuro distópico donde los deshechos son descartados en los estratos inferiores, Rudo lucha por encontrar a su amiga. Una aventura épica llena de misterio y acción.",
+      "In a dystopian future where waste is discarded in lower strata, Rudo fights to find his friend. An epic adventure full of mystery and action.",
     image: new URL("@/assets/recommendations/gachiakuta.webp", import.meta.url).href,
   },
   {
     title: "Oshi no Ko",
-    whyRecommended: "Thriller psicológico con giros inesperados",
+    whyRecommended: "Psychological thriller with unexpected twists",
     description:
-      "Un idol brillante es asesinada, y su productor renace como su hijo. Una historia de thriller psicológico que te mantiene al borde del asiento con giros inesperados.",
+      "A brilliant idol is murdered, and her producer is reborn as her son. A psychological thriller story that keeps you on the edge of your seat with unexpected twists.",
     image: new URL("@/assets/recommendations/oshinoko.webp", import.meta.url).href,
   },
   {
     title: "Takopi's Original Sin",
-    whyRecommended: "Oscuro y cautivador, obra maestra subestimada",
+    whyRecommended: "Dark and captivating, underrated masterpiece",
     description:
-      "Un pulpo extraño aparece en el mundo moderno, buscando encontrar su hogar. Una historia oscura y emotiva que toca temas profundos con un tono único.",
+      "A strange octopus appears in the modern world, seeking to find its home. A dark and emotional story that touches deep themes with a unique tone.",
     image: new URL("@/assets/recommendations/takopi.webp", import.meta.url).href,
   },
   {
     title: "Sword Art Online",
-    whyRecommended: "Clásico que marcó generación, aventura épica",
+    whyRecommended: "Classic that marked a generation, epic adventure",
     description:
-      "Miles de jugadores quedan atrapados en un MMORPG mortal donde morir en el juego significa morir en la vida real. Kirito se convierte en uno de los jugadores más fuertes mientras busca escapar.",
+      "Thousands of players are trapped in a deadly MMORPG where dying in the game means dying in real life. Kirito becomes one of the strongest players while seeking to escape.",
     image: new URL("@/assets/recommendations/sao.webp", import.meta.url).href,
   },
   {
     title: "The Quintessential Quintuplets",
-    whyRecommended: "Harem romántico con desarrollo genuino de personajes",
+    whyRecommended: "Romantic harem with genuine character development",
     description:
-      "Un tutor es contratado para enseñar a cinco hermanas gemelas idénticas. Lo que comienza como un trabajo se convierte en una aventura romántica llena de sorpresas y desarrollo de personajes.",
+      "A tutor is hired to teach five identical twin sisters. What begins as a job becomes a romantic adventure full of surprises and character development.",
     image: new URL("@/assets/recommendations/quinti.webp", import.meta.url).href,
   },
   {
     title: "Frieren: Beyond Journey's End",
     displayTitle: "Frieren: Beyond Journey's End",
-    whyRecommended: "Profundo y contemplativo, belleza en la simplicidad",
+    whyRecommended: "Deep and contemplative, beauty in simplicity",
     description:
-      "Después de una épica aventura de 10 años, Frieren una elfa descubre que solo han pasado días para ella. Explora la importancia de los momentos y la conexión entre personas.",
+      "After an epic 10-year adventure, Frieren an elf discovers that only days have passed for her. Explores the importance of moments and connections between people.",
     image: new URL("@/assets/recommendations/frieren.webp", import.meta.url).href,
   },
 ];

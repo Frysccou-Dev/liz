@@ -1,7 +1,7 @@
 <template>
   <section class="w-full">
     <div class="flex flex-col px-12">
-      <h2 class="text-lg font-light text-gray-900 tracking-wide text-center mb-8">Más Populares</h2>
+      <h2 class="text-lg font-light text-gray-900 tracking-wide text-center mb-8">Most Popular</h2>
       <div class="flex gap-12 flex-wrap justify-center">
         <AnimeCard v-for="anime in animes" :key="anime.id" :anime="anime" />
       </div>

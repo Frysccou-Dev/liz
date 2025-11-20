@@ -8,12 +8,12 @@
       <div v-if="isSearching" class="w-full px-4 md:px-12 animate-fade-in">
         <div class="w-[min(1100px,100%)] mx-auto">
           <div class="flex justify-between items-center mb-8">
-            <h2 class="text-2xl font-light text-gray-900 tracking-wide">Resultados de búsqueda</h2>
+            <h2 class="text-2xl font-light text-gray-900 tracking-wide">Search Results</h2>
             <button
               @click="clearSearch"
               class="text-sm text-gray-500 hover:text-gray-900 transition-colors"
             >
-              Limpiar filtros
+              Clear filters
             </button>
           </div>
 
@@ -30,8 +30,8 @@
           </div>
 
           <div v-else class="flex flex-col items-center justify-center py-20 text-gray-500">
-            <p class="text-lg font-light">No se encontraron resultados</p>
-            <p class="text-sm mt-2">Intenta ajustar los filtros</p>
+            <p class="text-lg font-light">No results found</p>
+            <p class="text-sm mt-2">Try adjusting the filters</p>
           </div>
 
           <div v-if="searchResults.length > 0" class="flex justify-center gap-4 mt-12">
@@ -40,17 +40,15 @@
               :disabled="currentPage === 1"
               class="px-6 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
             >
-              Anterior
+              Previous
             </button>
-            <span class="flex items-center text-gray-600 font-light">
-              Página {{ currentPage }}
-            </span>
+            <span class="flex items-center text-gray-600 font-light"> Page {{ currentPage }} </span>
             <button
               @click="changePage(currentPage + 1)"
               :disabled="!hasNextPage"
               class="px-6 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
             >
-              Siguiente
+              Next
             </button>
           </div>
         </div>
@@ -98,7 +96,6 @@ const onComponentLoaded = () => {
 };
 
 const handleSearch = async (filters: SearchFilters) => {
-  // Check if any filter is active
   const hasFilters = Object.values(filters).some((val) => val !== "" && val !== undefined);
 
   if (!hasFilters) {
@@ -113,7 +110,7 @@ const handleSearch = async (filters: SearchFilters) => {
 };
 
 const fetchResults = async () => {
-  if (loaderRef.value) loaderRef.value.showLoader(); // Optional: show loader during search
+  if (loaderRef.value) loaderRef.value.showLoader();
   try {
     const results = await aniListService.searchAdvanced(
       currentFilters.value,
@@ -121,8 +118,6 @@ const fetchResults = async () => {
       15
     );
     searchResults.value = results;
-    // Assuming we get 15 results, if we get less, there's no next page.
-    // Ideally the service returns pageInfo, but for now we check length.
     hasNextPage.value = results.length === 15;
   } catch (error) {
     console.error(error);
