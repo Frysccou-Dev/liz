@@ -9,7 +9,7 @@
             <input
               v-model="filters.search"
               type="text"
-              placeholder="Search anime..."
+              placeholder="Search manga..."
               class="w-full h-12 px-4 pl-11 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-300 focus:ring-2 focus:ring-gray-100 transition-all text-gray-700 placeholder:text-gray-400"
               @keyup.enter="emitSearch"
             />
@@ -32,7 +32,7 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
           <CustomSelect
             v-model="filters.genre"
             :options="genreOptions"
@@ -41,8 +41,6 @@
           />
 
           <CustomSelect v-model="filters.year" :options="yearOptions" placeholder="Year" />
-
-          <CustomSelect v-model="filters.season" :options="seasonOptions" placeholder="Season" />
 
           <CustomSelect
             v-model="filters.format"
@@ -61,7 +59,7 @@
 <script setup lang="ts">
 import { reactive, computed, onMounted, ref } from "vue";
 import { Search as SearchIcon, Trash2 as Trash2Icon } from "lucide-vue-next";
-import { type SearchFilters, aniListService } from "@/services/anilist";
+import { type SearchFilters, aniListMangaService } from "@/services/anilist-manga";
 import CustomSelect from "@/components/ui/custom-select.vue";
 
 const emit = defineEmits<{
@@ -72,7 +70,6 @@ const filters = reactive<SearchFilters>({
   search: "",
   genre: [],
   year: undefined,
-  season: undefined,
   format: [],
   status: undefined,
 });
@@ -86,25 +83,16 @@ const genreOptions = computed(() => genres.value.map((g) => ({ label: g, value: 
 
 const yearOptions = computed(() => years.map((y) => ({ label: y.toString(), value: y })));
 
-const seasonOptions = [
-  { label: "Winter", value: "WINTER" },
-  { label: "Spring", value: "SPRING" },
-  { label: "Summer", value: "SUMMER" },
-  { label: "Fall", value: "FALL" },
-];
-
 const formatOptions = [
-  { label: "TV", value: "TV" },
-  { label: "Movie", value: "MOVIE" },
-  { label: "OVA", value: "OVA" },
-  { label: "ONA", value: "ONA" },
-  { label: "Special", value: "SPECIAL" },
+  { label: "Manga", value: "MANGA" },
+  { label: "Novel", value: "NOVEL" },
+  { label: "One Shot", value: "ONE_SHOT" },
 ];
 
 const statusOptions = [
-  { label: "Airing", value: "RELEASING" },
+  { label: "Releasing", value: "RELEASING" },
   { label: "Finished", value: "FINISHED" },
-  { label: "Not Yet Aired", value: "NOT_YET_RELEASED" },
+  { label: "Not Yet Released", value: "NOT_YET_RELEASED" },
   { label: "Cancelled", value: "CANCELLED" },
 ];
 
@@ -116,7 +104,6 @@ const clearFilters = () => {
   filters.search = "";
   filters.genre = [];
   filters.year = undefined;
-  filters.season = undefined;
   filters.format = [];
   filters.status = undefined;
   emitSearch();
@@ -124,7 +111,7 @@ const clearFilters = () => {
 
 onMounted(async () => {
   try {
-    genres.value = await aniListService.getGenres();
+    genres.value = await aniListMangaService.getGenres();
   } catch (error) {
     console.error("Failed to fetch genres:", error);
   }

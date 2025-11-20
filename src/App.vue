@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import Footer from "@/components/layout/footer.vue";
 import Navbar from "./components/layout/navbar.vue";
 import RateLimitModal from "@/components/layout/rate-limit-modal.vue";
+import { useAuth } from "@/composables/useAuth";
 
 const rateLimitModalRef = ref<InstanceType<typeof RateLimitModal>>();
+const { initializeAuth } = useAuth();
 
 declare global {
   interface Window {
@@ -15,6 +17,10 @@ declare global {
 window.showRateLimitModal = (duration: number = 10000) => {
   rateLimitModalRef.value?.showWithTimeout(duration);
 };
+
+onMounted(() => {
+  initializeAuth();
+});
 </script>
 
 <template>

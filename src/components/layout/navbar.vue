@@ -28,12 +28,47 @@
             class="absolute bottom-0 left-0 w-0 h-px bg-gray-900 group-hover:w-full transition-all duration-300"
           ></span>
         </router-link>
+
+        <router-link
+          to="/manga"
+          class="text-sm font-light text-gray-700 hover:text-gray-900 transition-colors duration-300 relative group"
+        >
+          Mangas
+          <span
+            class="absolute bottom-0 left-0 w-0 h-px bg-gray-900 group-hover:w-full transition-all duration-300"
+          ></span>
+        </router-link>
+
+        <router-link
+          v-if="user"
+          to="/profile"
+          class="text-sm font-light text-gray-700 hover:text-gray-900 transition-colors duration-300 relative group"
+        >
+          Profile
+          <span
+            class="absolute bottom-0 left-0 w-0 h-px bg-gray-900 group-hover:w-full transition-all duration-300"
+          ></span>
+        </router-link>
+
+        <router-link
+          v-else
+          to="/login"
+          class="text-sm font-light text-gray-700 hover:text-gray-900 transition-colors duration-300 relative group"
+        >
+          Login
+          <span
+            class="absolute bottom-0 left-0 w-0 h-px bg-gray-900 group-hover:w-full transition-all duration-300"
+          ></span>
+        </router-link>
       </div>
     </div>
   </nav>
   <img src="@/assets/footer.svg" class="w-full scale-y-[-1]" />
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useAuth } from "@/composables/useAuth";
+const { user } = useAuth();
+</script>
 
 <style scoped></style>
