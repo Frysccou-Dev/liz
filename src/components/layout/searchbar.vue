@@ -3,7 +3,7 @@
     <div class="w-[min(1100px,100%)]">
       <label class="sr-only" for="search-input">Buscar</label>
       <div
-        class="flex items-center gap-3 border border-gray-200 rounded-[10px] h-16 bg-white/6 backdrop-blur-md px-6 z-999"
+        class="flex items-center gap-3 border border-gray-200 rounded-[10px] h-16 bg-white/6 backdrop-blur-md pr-6 z-999"
       >
         <div
           class="rounded-[10px] bg-gray-100/30 w-16 h-16 flex items-center justify-center shrink-0 z-0"
@@ -24,7 +24,6 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits } from "vue";
 import { Search } from "lucide-vue-next";
 
 const props = defineProps({
