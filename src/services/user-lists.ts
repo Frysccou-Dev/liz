@@ -116,7 +116,7 @@ class UserListService {
     } = await supabase.auth.getUser();
     if (!user) throw new Error("User not authenticated");
 
-    const payload: Record<string, any> = {
+    const payload: Record<string, string | number | undefined> = {
       user_id: user.id,
       [idField]: mediaId,
       status,

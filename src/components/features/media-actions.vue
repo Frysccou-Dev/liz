@@ -1,6 +1,5 @@
 <template>
   <div class="flex items-center gap-4">
-    <!-- Status Selector -->
     <div class="relative" ref="statusDropdownRef">
       <button
         @click="toggleStatusDropdown"
@@ -27,7 +26,6 @@
       </div>
     </div>
 
-    <!-- Add to List Button -->
     <button
       @click="openListsModal"
       class="p-2 rounded-xl border border-gray-200 hover:bg-gray-50 hover:border-red-200 hover:text-red-500 transition-all group"
@@ -36,7 +34,6 @@
       <HeartIcon class="w-6 h-6" :class="{ 'fill-current': isInAnyList }" />
     </button>
 
-    <!-- Lists Modal -->
     <Teleport to="body">
       <div v-if="showListsModal" class="fixed inset-0 z-60 flex items-center justify-center px-4">
         <div
@@ -116,7 +113,7 @@ const showListsModal = ref(false);
 const statusDropdownRef = ref<HTMLElement | null>(null);
 const currentStatus = ref<string | null>(null);
 const lists = ref<CustomList[]>([]);
-const listItems = ref<Record<number, boolean>>({}); // listId -> boolean
+const listItems = ref<Record<number, boolean>>({});
 const loadingLists = ref(false);
 
 const animeStatusOptions = [
@@ -168,8 +165,6 @@ const updateStatus = async (status: string | null) => {
         props.mediaCover
       );
     }
-    // If status is null, we might want to delete the entry, but for now let's just update local state
-    // Ideally we should have a deleteStatus method in service
     currentStatus.value = status;
     showStatusDropdown.value = false;
   } catch (error) {
@@ -191,10 +186,8 @@ const openListsModal = async () => {
 const fetchListsAndStatus = async () => {
   loadingLists.value = true;
   try {
-    // Fetch user lists
     lists.value = await userListService.getCustomLists();
 
-    // Check which lists contain this item
     const checks: Record<number, boolean> = {};
     for (const list of lists.value) {
       const items = await userListService.getListItems(list.id);
@@ -232,7 +225,6 @@ const toggleList = async (listId: number) => {
 
 const isItemInList = (listId: number) => !!listItems.value[listId];
 
-// Click outside to close dropdown
 const handleClickOutside = (event: MouseEvent) => {
   if (statusDropdownRef.value && !statusDropdownRef.value.contains(event.target as Node)) {
     showStatusDropdown.value = false;
@@ -247,7 +239,6 @@ onMounted(async () => {
       if (statusData) {
         currentStatus.value = statusData.status;
       }
-      // Pre-fetch list status to show heart fill correctly
       await fetchListsAndStatus();
     } catch (error) {
       console.error(error);

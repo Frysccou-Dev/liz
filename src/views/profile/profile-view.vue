@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen py-12 px-4">
     <div class="max-w-5xl mx-auto space-y-8">
-      <!-- Profile Header -->
       <div class="bg-white rounded-2xl shadow-sm p-8 flex items-center gap-6 animate-fade-in">
         <div
           class="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-3xl font-light text-gray-500"
@@ -20,7 +19,6 @@
         </button>
       </div>
 
-      <!-- Tabs Navigation -->
       <div
         class="flex gap-6 border-b border-gray-200 animate-fade-in"
         style="animation-delay: 0.05s"
@@ -40,7 +38,6 @@
         </button>
       </div>
 
-      <!-- Overview Tab (Custom Lists) -->
       <div
         v-if="activeTab === 'overview'"
         class="space-y-6 animate-fade-in"
@@ -98,7 +95,6 @@
         </div>
       </div>
 
-      <!-- Anime/Manga List Tabs -->
       <div v-else class="space-y-8 animate-fade-in" style="animation-delay: 0.1s">
         <div v-for="status in mediaStatuses" :key="status" class="space-y-4">
           <h3 class="text-lg font-medium text-gray-900 capitalize">{{ formatStatus(status) }}</h3>
@@ -157,7 +153,6 @@
       </div>
     </div>
 
-    <!-- Create List Modal -->
     <div
       v-if="showCreateListModal"
       class="fixed inset-0 z-50 flex items-center justify-center px-4"
@@ -208,7 +203,6 @@
       </div>
     </div>
 
-    <!-- List Details Modal -->
     <div
       v-if="showListDetailsModal"
       class="fixed inset-0 z-50 flex items-center justify-center px-4"
@@ -217,7 +211,6 @@
       <div
         class="bg-white rounded-2xl w-full max-w-4xl h-[80vh] flex flex-col relative z-10 animate-scale-in overflow-hidden"
       >
-        <!-- Modal Header -->
         <div class="p-6 border-b border-gray-100 flex justify-between items-start">
           <div>
             <h3 class="text-2xl font-light text-gray-900">{{ selectedList?.name }}</h3>
@@ -228,7 +221,6 @@
           </button>
         </div>
 
-        <!-- Modal Content -->
         <div class="flex-1 overflow-y-auto p-6">
           <div v-if="loadingListItems" class="flex justify-center py-12">
             <div
@@ -287,7 +279,6 @@ import { Trash2 as Trash2Icon, X as XIcon } from "lucide-vue-next";
 const { user, profile, signOut } = useAuth();
 const router = useRouter();
 
-// Tabs
 const activeTab = ref("overview");
 const tabs = [
   { id: "overview", label: "Overview" },
@@ -295,7 +286,6 @@ const tabs = [
   { id: "manga", label: "Manga List" },
 ];
 
-// Lists State
 const lists = ref<CustomList[]>([]);
 const loadingLists = ref(true);
 const showCreateListModal = ref(false);
@@ -303,16 +293,14 @@ const newListName = ref("");
 const newListDesc = ref("");
 const creatingList = ref(false);
 
-// List Details State
 const showListDetailsModal = ref(false);
 const selectedList = ref<CustomList | null>(null);
 const selectedListItems = ref<ListItem[]>([]);
 const loadingListItems = ref(false);
 
-// Media Status State
 const animeList = ref<MediaStatus[]>([]);
 const mangaList = ref<MediaStatus[]>([]);
-const mediaStatuses = ["WATCHING", "COMPLETED", "PLAN_TO_WATCH", "DROPPED", "ON_HOLD"]; // Standard statuses
+const mediaStatuses = ["WATCHING", "COMPLETED", "PLAN_TO_WATCH", "DROPPED", "ON_HOLD"];
 const loadingMedia = ref(true);
 
 const handleSignOut = async () => {
@@ -371,7 +359,6 @@ const deleteList = async (id: number) => {
   }
 };
 
-// List Details Logic
 const openListDetails = async (list: CustomList) => {
   selectedList.value = list;
   showListDetailsModal.value = true;
@@ -400,7 +387,6 @@ const removeListItem = async (item: ListItem) => {
     console.error(error);
   }
 };
-// Media Status Logic
 const getMediaByStatus = (list: MediaStatus[], status: string) => {
   return list.filter((item) => item.status && item.status.toUpperCase() === status);
 };

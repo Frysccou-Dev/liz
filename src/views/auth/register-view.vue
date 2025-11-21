@@ -108,7 +108,6 @@ const handleRegister = async () => {
 
     if (authError) throw authError;
 
-    // Auto login or redirect
     router.push("/profile");
   } catch (e: unknown) {
     if (e instanceof Error) {

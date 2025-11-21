@@ -141,6 +141,10 @@ class AniListService {
       localStorage.removeItem(storageKey);
       return null;
     } catch {
+      try {
+        localStorage.removeItem(this.STORAGE_PREFIX + key);
+      } catch {
+      }
       return null;
     }
   }
@@ -154,7 +158,6 @@ class AniListService {
       };
       localStorage.setItem(storageKey, JSON.stringify(entry));
     } catch {
-      // Fail silently if localStorage is unavailable
     }
   }
 
@@ -543,7 +546,6 @@ class AniListService {
         }
       });
     } catch {
-      // Fail silently if localStorage is unavailable
     }
   }
 

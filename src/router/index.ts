@@ -67,7 +67,6 @@ router.beforeEach(async (to, from, next) => {
     }
   } catch (error) {
     console.error("Auth check failed:", error);
-    // En caso de error (ej: sin conexión o config), permitir navegación a rutas públicas
     if (to.matched.some((record) => record.meta.requiresAuth)) {
       next("/login");
     } else {
