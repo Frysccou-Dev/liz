@@ -23,25 +23,43 @@ export interface MediaStatus {
   status: string;
   score?: number;
   updated_at: string;
+  media_title?: string;
+  media_cover?: string;
 }
 
 class UserListService {
   async getCustomLists() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) throw new Error("User not authenticated");
+
     const { data, error } = await supabase
       .from("custom_lists")
       .select("*")
+      .eq("user_id", user.id)
       .order("created_at", { ascending: false });
     if (error) throw error;
     return data as CustomList[];
   }
 
   async createCustomList(name: string, description?: string) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) throw new Error("User not authenticated");
+
     const { data, error } = await supabase
       .from("custom_lists")
-      .insert({ name, description })
+      .insert({
+        name,
+        description,
+        user_id: user.id,
+      })
       .select()
       .single();
     if (error) throw error;
+    if (!data) throw new Error("No data returned");
     return data as CustomList;
   }
 
@@ -82,7 +100,14 @@ class UserListService {
     if (error) throw error;
   }
 
-  async updateStatus(mediaId: number, type: "ANIME" | "MANGA", status: string, score?: number) {
+  async updateStatus(
+    mediaId: number,
+    type: "ANIME" | "MANGA",
+    status: string,
+    score?: number,
+    title?: string,
+    cover?: string
+  ) {
     const table = type === "ANIME" ? "user_anime_status" : "user_manga_status";
     const idField = type === "ANIME" ? "anime_id" : "manga_id";
 
@@ -91,17 +116,38 @@ class UserListService {
     } = await supabase.auth.getUser();
     if (!user) throw new Error("User not authenticated");
 
-    const { error } = await supabase.from(table).upsert(
-      {
-        user_id: user.id,
-        [idField]: mediaId,
-        status,
-        score,
-      },
-      { onConflict: `user_id,${idField}` }
-    );
+    const payload: Record<string, any> = {
+      user_id: user.id,
+      [idField]: mediaId,
+      status,
+      score,
+    };
+
+    if (title) payload.media_title = title;
+    if (cover) payload.media_cover = cover;
+
+    const { error } = await supabase
+      .from(table)
+      .upsert(payload, { onConflict: `user_id,${idField}` });
 
     if (error) throw error;
+  }
+
+  async getUserMediaStatus(type: "ANIME" | "MANGA") {
+    const table = type === "ANIME" ? "user_anime_status" : "user_manga_status";
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data, error } = await supabase
+      .from(table)
+      .select("*")
+      .eq("user_id", user.id)
+      .order("updated_at", { ascending: false });
+
+    if (error) throw error;
+    return data as MediaStatus[];
   }
 
   async getStatus(mediaId: number, type: "ANIME" | "MANGA") {

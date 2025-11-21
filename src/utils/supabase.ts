@@ -9,4 +9,18 @@ if (!supabaseUrl || !supabaseKey) {
   );
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+import Cookies from "js-cookie";
+
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    storage: {
+      getItem: (key) => Cookies.get(key) ?? null,
+      setItem: (key, value) => {
+        Cookies.set(key, value, { expires: 365, secure: true });
+      },
+      removeItem: (key) => {
+        Cookies.remove(key);
+      },
+    },
+  },
+});

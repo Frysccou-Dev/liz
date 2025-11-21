@@ -159,7 +159,14 @@ const updateStatus = async (status: string | null) => {
 
   try {
     if (status) {
-      await userListService.updateStatus(props.mediaId, props.mediaType, status);
+      await userListService.updateStatus(
+        props.mediaId,
+        props.mediaType,
+        status,
+        undefined,
+        props.mediaTitle,
+        props.mediaCover
+      );
     }
     // If status is null, we might want to delete the entry, but for now let's just update local state
     // Ideally we should have a deleteStatus method in service

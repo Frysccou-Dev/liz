@@ -96,7 +96,10 @@ const onComponentLoaded = () => {
 };
 
 const handleSearch = async (filters: SearchFilters) => {
-  const hasFilters = Object.values(filters).some((val) => val !== "" && val !== undefined);
+  const hasFilters = Object.values(filters).some((val) => {
+    if (Array.isArray(val)) return val.length > 0;
+    return val !== "" && val !== undefined && val !== null;
+  });
 
   if (!hasFilters) {
     clearSearch();
