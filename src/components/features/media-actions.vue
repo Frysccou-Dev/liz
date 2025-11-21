@@ -87,7 +87,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuth } from "@/composables/useAuth";
 import { userListService, type CustomList } from "@/services/user-lists";
@@ -230,6 +230,25 @@ const handleClickOutside = (event: MouseEvent) => {
     showStatusDropdown.value = false;
   }
 };
+
+watch(
+  () => props.mediaId,
+  async (newId) => {
+    if (newId && user.value) {
+      currentStatus.value = null;
+      listItems.value = {};
+      try {
+        const statusData = await userListService.getStatus(props.mediaId, props.mediaType);
+        if (statusData) {
+          currentStatus.value = statusData.status;
+        }
+        await fetchListsAndStatus();
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }
+);
 
 onMounted(async () => {
   document.addEventListener("click", handleClickOutside);
