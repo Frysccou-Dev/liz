@@ -1,9 +1,18 @@
 <template>
   <section class="w-full">
-    <div class="flex flex-col px-12">
-      <h2 class="text-lg font-light text-gray-900 tracking-wide text-center mb-8">Most Popular</h2>
-      <div class="flex gap-12 flex-wrap justify-center">
-        <AnimeCard v-for="anime in animes" :key="anime.id" :anime="anime" />
+    <div class="flex flex-col px-0 md:px-12">
+      <h2 class="text-lg font-light text-gray-900 tracking-wide text-center mb-8">
+        All Time Popular
+      </h2>
+      <div
+        class="flex overflow-x-auto snap-x snap-mandatory gap-4 px-4 pb-4 md:pb-0 md:px-0 md:flex-wrap md:justify-center md:gap-12 md:overflow-visible scrollbar-hide"
+      >
+        <AnimeCard
+          v-for="anime in animes"
+          :key="anime.id"
+          :anime="anime"
+          class="snap-center shrink-0"
+        />
       </div>
     </div>
   </section>

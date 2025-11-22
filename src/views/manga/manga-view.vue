@@ -19,7 +19,7 @@
 
           <div
             v-if="searchResults.length > 0"
-            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 justify-items-center"
+            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 justify-items-center"
           >
             <MangaCard
               v-for="manga in searchResults"
@@ -92,7 +92,10 @@ const onComponentLoaded = () => {
 };
 
 const handleSearch = async (filters: SearchFilters) => {
-  const hasFilters = Object.values(filters).some((val) => val !== "" && val !== undefined);
+  const hasFilters = Object.values(filters).some((val) => {
+    if (Array.isArray(val)) return val.length > 0;
+    return val !== "" && val !== undefined && val !== null;
+  });
 
   if (!hasFilters) {
     clearSearch();
