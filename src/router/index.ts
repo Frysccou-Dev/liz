@@ -54,6 +54,11 @@ const router = createRouter({
       component: () => import("../views/social/social-view.vue"),
       meta: { requiresAuth: true },
     },
+    {
+      path: "/:pathMatch(.*)*",
+      name: "NotFound",
+      component: () => import("../views/NotFound.vue"),
+    },
   ],
 });
 

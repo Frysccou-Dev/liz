@@ -19,12 +19,10 @@
 
     <div class="absolute bottom-0 left-0 w-full px-4 pb-8 md:pb-12">
       <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-end gap-8">
-        <!-- Cover Image -->
         <div class="hidden md:block w-52 rounded-lg overflow-hidden shadow-2xl -mb-20 z-10">
           <img :src="anime.coverImage.extraLarge" :alt="anime.title.romaji" class="w-full h-auto" />
         </div>
 
-        <!-- Title & Quick Stats -->
         <div class="flex-1 mb-4">
           <h2
             class="text-2xl sm:text-3xl md:text-6xl font-bold text-white leading-tight mb-4 line-clamp-2 md:line-clamp-none"
