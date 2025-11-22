@@ -71,7 +71,17 @@ src/
 - **Media Tracking:** Add anime/manga to standard lists (Planning, Watching, Completed, Dropped, Paused).
 - **Supabase Integration:** All user data and lists are persisted in a Supabase Postgres database.
 
-### 4. Responsive Design & UX
+### 4. Lizbeth Chatbot 🌸
+
+- **Interactive AI Persona:** A mobile-first chatbot named "Lizbeth" that provides personalized anime and manga recommendations.
+- **Guided Conversation:** Uses a state machine flow (Greeting -> Type -> Genre -> Details) to understand user preferences.
+- **Smart Recommendations:**
+  - "Thinks" by searching based on user input first.
+  - Falls back to broader genre searches if no specific match is found.
+  - Fetches detailed media information for the final recommendation.
+- **Minimalist UI:** Clean, monochrome design with subtle animations and a non-intrusive floating trigger.
+
+### 5. Responsive Design & UX
 
 - **Mobile-First:** Optimized layouts for mobile, tablet, and desktop.
 - **Horizontal Carousels:** Swipeable lists for media items on mobile devices.
@@ -92,6 +102,9 @@ Create a `.env` file in the root directory with the following Supabase credentia
 ```env
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_LIZBETH_SYSTEM_PROMPT="You are Lizbeth, a passionate and knowledgeable anime and manga expert..."
+GEMINI_API_KEY=your_gemini_api_key
+
 ```
 
 ### Installation
