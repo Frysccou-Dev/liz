@@ -3,10 +3,11 @@ import { ref, onMounted } from "vue";
 import Footer from "@/components/layout/footer.vue";
 import Navbar from "./components/layout/navbar.vue";
 import RateLimitModal from "@/components/layout/rate-limit-modal.vue";
+import LizbethChat from "@/components/features/lizbeth-chat.vue";
 import { useAuth } from "@/composables/useAuth";
 
 const rateLimitModalRef = ref<InstanceType<typeof RateLimitModal>>();
-const { initializeAuth } = useAuth();
+const { initializeAuth, user } = useAuth();
 
 declare global {
   interface Window {
@@ -28,6 +29,7 @@ onMounted(() => {
   <RateLimitModal ref="rateLimitModalRef" />
   <router-view />
   <Footer />
+  <LizbethChat v-if="user" />
 </template>
 
 <style scoped></style>
