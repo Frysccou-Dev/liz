@@ -4,6 +4,7 @@ import "./main.css";
 import router from "./router";
 
 import { createPinia } from "pinia";
+import { registerSW } from "virtual:pwa-register";
 
 const app = createApp(App);
 
@@ -22,3 +23,14 @@ app.use(createPinia());
 app.use(router);
 
 app.mount("#app");
+
+const updateSW = registerSW({
+  onNeedRefresh() {
+    if (confirm("New version available. Update now?")) {
+      updateSW(true);
+    }
+  },
+  onOfflineReady() {
+    console.log("App ready to work offline");
+  },
+});
