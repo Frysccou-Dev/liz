@@ -160,7 +160,7 @@ class UserListService {
       .eq(idField, mediaId)
       .single();
 
-    if (error && error.code !== "PGRST116") throw error; // Ignore not found error
+    if (error && error.code !== "PGRST116") throw error;
     return data as { status: string; score: number } | null;
   }
 }

@@ -220,6 +220,20 @@ The application uses `vue-router` with the following structure:
   - `/profile` (User Profile & Lists)
   - `/social` (Community Feed & Social Interactions)
 
+## ❗️ 404 - Not Found
+
+If a user navigates to an undefined route, the application displays a friendly 404 page informing them that the requested page does not exist. This page is defined in `src/views/NotFound.vue` and is registered in the router as a catch‑all route:
+
+```ts
+{
+  path: '/:pathMatch(.*)*',
+  name: 'NotFound',
+  component: () => import('@/views/NotFound.vue')
+}
+```
+
+The 404 view provides a link back to the home page and maintains the app’s dark/light theme.
+
 ## 🎨 Styling System
 
 - **Tailwind CSS 4:** Used for utility-first styling.
