@@ -1,6 +1,6 @@
 <template>
   <div
-    class="grid grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-10 md:gap-12 w-full max-w-7xl px-8"
+    class="grid grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-8 md:gap-10 lg:gap-12 w-full max-w-7xl px-8"
   >
     <div
       v-for="(item, index) in highlights"

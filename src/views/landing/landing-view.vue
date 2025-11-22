@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import LandingHero from "./components/landing-hero.vue";
@@ -46,7 +46,11 @@ const highlightsSection = ref<HTMLElement>();
 const statsSection = ref<HTMLElement>();
 const ctaSection = ref<HTMLElement>();
 
+let mm: gsap.MatchMedia;
+
 onMounted(() => {
+  mm = gsap.matchMedia();
+
   if (heroRef.value && featuresRef.value && highlightsRef.value && statsRef.value && ctaRef.value) {
     const heroElement = heroRef.value.$el;
     const featuresElement = featuresRef.value.$el;
@@ -62,94 +66,108 @@ onMounted(() => {
     const ctaDescription = ctaElement.querySelector(".cta-description");
     const ctaButton = ctaElement.querySelector(".cta-button");
 
-    gsap.set(letters, { opacity: 0, y: 100 });
-    gsap.set(featureChars, { opacity: 0, x: -20, rotateZ: -15 });
-    gsap.set(highlightItems, { opacity: 0, y: 50 });
-    gsap.set(statItems, { opacity: 0, scale: 0.8 });
-    gsap.set([ctaTitle, ctaDescription, ctaButton], { opacity: 0, y: 30 });
+    const setupAnimations = (isMobile: boolean) => {
+      gsap.set(letters, { opacity: 0, y: 100 });
+      gsap.set(featureChars, { opacity: 0, x: -20, rotateZ: -15 });
+      gsap.set(highlightItems, { opacity: 0, y: 50 });
+      gsap.set(statItems, { opacity: 0, scale: 0.8 });
+      gsap.set([ctaTitle, ctaDescription, ctaButton], { opacity: 0, y: 30 });
 
-    const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
+      const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
 
-    tl.to(letters, {
-      opacity: 1,
-      y: 0,
-      duration: 1,
-      stagger: 0.15,
-      ease: "back.out(1.7)",
-    });
+      tl.to(letters, {
+        opacity: 1,
+        y: 0,
+        duration: isMobile ? 0.8 : 1,
+        stagger: isMobile ? 0.1 : 0.15,
+        ease: "back.out(1.7)",
+      });
 
-    letters.forEach((letter: Element, index: number) => {
-      gsap.fromTo(
-        letter,
-        {
-          opacity: 1,
-          y: 0,
-        },
-        {
-          opacity: 0,
-          y: -100,
-          scrollTrigger: {
-            trigger: heroSection.value,
-            start: `${20 + index * 15}% top`,
-            end: `${40 + index * 15}% top`,
-            scrub: 1,
-            toggleActions: "play none none reverse",
+      letters.forEach((letter: Element, index: number) => {
+        gsap.fromTo(
+          letter,
+          {
+            opacity: 1,
+            y: 0,
           },
-        }
-      );
+          {
+            opacity: 0,
+            y: -100,
+            scrollTrigger: {
+              trigger: heroSection.value,
+              start: `${20 + index * 15}% top`,
+              end: `${40 + index * 15}% top`,
+              scrub: 1,
+              toggleActions: "play none none reverse",
+            },
+          }
+        );
+      });
+
+      gsap.to(featureChars, {
+        opacity: 1,
+        x: 0,
+        rotateZ: 0,
+        stagger: 0.02,
+        scrollTrigger: {
+          trigger: heroSection.value,
+          start: isMobile ? "60% top" : "70% top",
+          end: "bottom top",
+          scrub: 0.8,
+        },
+      });
+
+      gsap.to(highlightItems, {
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        stagger: isMobile ? 0.1 : 0.2,
+        scrollTrigger: {
+          trigger: highlightsSection.value,
+          start: isMobile ? "top 85%" : "top 80%",
+          toggleActions: "play none none reverse",
+        },
+      });
+
+      gsap.to(statItems, {
+        opacity: 1,
+        scale: 1,
+        duration: 0.8,
+        stagger: isMobile ? 0.1 : 0.15,
+        ease: "back.out(1.7)",
+        scrollTrigger: {
+          trigger: statsSection.value,
+          start: isMobile ? "top 85%" : "top 75%",
+          toggleActions: "play none none reverse",
+        },
+      });
+
+      const ctaTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: ctaSection.value,
+          start: isMobile ? "top 85%" : "top 80%",
+          toggleActions: "play none none reverse",
+        },
+      });
+
+      ctaTl
+        .to(ctaTitle, { opacity: 1, y: 0, duration: 0.8 })
+        .to(ctaDescription, { opacity: 1, y: 0, duration: 0.6 }, "-=0.4")
+        .to(ctaButton, { opacity: 1, y: 0, duration: 0.6 }, "-=0.3");
+    };
+
+    mm.add("(min-width: 1024px)", () => {
+      setupAnimations(false);
     });
 
-    gsap.to(featureChars, {
-      opacity: 1,
-      x: 0,
-      rotateZ: 0,
-      stagger: 0.02,
-      scrollTrigger: {
-        trigger: heroSection.value,
-        start: "70% top",
-        end: "bottom top",
-        scrub: 0.8,
-      },
+    mm.add("(max-width: 1023px)", () => {
+      setupAnimations(true);
     });
-
-    gsap.to(highlightItems, {
-      opacity: 1,
-      y: 0,
-      duration: 1,
-      stagger: 0.2,
-      scrollTrigger: {
-        trigger: highlightsSection.value,
-        start: "top 80%",
-        toggleActions: "play none none reverse",
-      },
-    });
-
-    gsap.to(statItems, {
-      opacity: 1,
-      scale: 1,
-      duration: 0.8,
-      stagger: 0.15,
-      ease: "back.out(1.7)",
-      scrollTrigger: {
-        trigger: statsSection.value,
-        start: "top 75%",
-        toggleActions: "play none none reverse",
-      },
-    });
-
-    const ctaTl = gsap.timeline({
-      scrollTrigger: {
-        trigger: ctaSection.value,
-        start: "top 80%",
-        toggleActions: "play none none reverse",
-      },
-    });
-
-    ctaTl
-      .to(ctaTitle, { opacity: 1, y: 0, duration: 0.8 })
-      .to(ctaDescription, { opacity: 1, y: 0, duration: 0.6 }, "-=0.4")
-      .to(ctaButton, { opacity: 1, y: 0, duration: 0.6 }, "-=0.3");
   }
+});
+
+onUnmounted(() => {
+  if (mm) mm.revert();
 });
 </script>
 
@@ -170,7 +188,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 5rem 1rem;
+  padding: 3rem 1rem;
 }
 
 .highlights-section {
@@ -178,7 +196,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 5rem 1rem;
+  padding: 3rem 1rem;
   background-color: rgb(249 250 251);
 }
 
@@ -187,7 +205,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 5rem 1rem;
+  padding: 3rem 1rem;
 }
 
 .cta-section {
@@ -195,7 +213,16 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 5rem 1rem;
+  padding: 3rem 1rem;
   background-color: rgb(249 250 251);
+}
+
+@media (min-width: 1024px) {
+  .features-section,
+  .highlights-section,
+  .stats-section,
+  .cta-section {
+    padding: 5rem 1rem;
+  }
 }
 </style>
