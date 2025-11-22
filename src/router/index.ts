@@ -57,27 +57,32 @@ const router = createRouter({
   ],
 });
 
-import { supabase } from "@/utils/supabase";
+import { useAuthStore } from "@/stores/auth";
+
+let authInitialized = false;
 
 router.beforeEach(async (to, from, next) => {
-  try {
-    const { data } = await supabase.auth.getSession();
-    const currentUser = data.session?.user;
+  const authStore = useAuthStore();
 
-    if (to.matched.some((record) => record.meta.requiresAuth) && !currentUser) {
-      next("/login");
-    } else if ((to.path === "/login" || to.path === "/register") && currentUser) {
-      next("/home");
-    } else {
-      next();
+  if (!authInitialized) {
+    try {
+      await authStore.initializeAuth();
+      authInitialized = true;
+    } catch (error) {
+      console.error("Failed to initialize auth:", error);
     }
-  } catch (error) {
-    console.error("Auth check failed:", error);
-    if (to.matched.some((record) => record.meta.requiresAuth)) {
-      next("/login");
-    } else {
-      next();
-    }
+  }
+
+  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
+  const isAuthPage = to.path === "/login" || to.path === "/register";
+  const isAuthenticated = authStore.isAuthenticated;
+
+  if (requiresAuth && !isAuthenticated) {
+    next("/login");
+  } else if (isAuthPage && isAuthenticated) {
+    next("/home");
+  } else {
+    next();
   }
 });
 

@@ -55,6 +55,27 @@
           {{ profile?.username || "User" }}
         </h2>
         <p class="text-sm md:text-base text-gray-500">{{ user?.email }}</p>
+
+        <div class="flex gap-4 mt-3">
+          <button
+            @click="$emit('show-followers')"
+            class="group flex items-center gap-1.5 hover:bg-gray-50 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            <span class="text-sm font-bold text-gray-900">{{ profile?.followers_count || 0 }}</span>
+            <span class="text-sm text-gray-500 group-hover:text-gray-900 transition-colors"
+              >Followers</span
+            >
+          </button>
+          <button
+            @click="$emit('show-following')"
+            class="group flex items-center gap-1.5 hover:bg-gray-50 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            <span class="text-sm font-bold text-gray-900">{{ profile?.following_count || 0 }}</span>
+            <span class="text-sm text-gray-500 group-hover:text-gray-900 transition-colors"
+              >Following</span
+            >
+          </button>
+        </div>
       </div>
     </div>
 
@@ -81,6 +102,8 @@ const props = defineProps<{
 
 defineEmits<{
   (e: "sign-out"): void;
+  (e: "show-followers"): void;
+  (e: "show-following"): void;
 }>();
 
 const { updateAvatar } = useAuth();

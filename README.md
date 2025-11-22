@@ -31,6 +31,7 @@ src/
 ├── services/        # API integration and "Mini-Backend" logic
 │   ├── anilist.ts       # Anime data fetching
 │   ├── anilist-manga.ts # Manga data fetching
+│   ├── social.ts        # Social features (posts, comments, follows)
 │   └── user-lists.ts    # Supabase database interactions
 ├── stores/          # Pinia state stores (Auth)
 ├── utils/           # Helper functions and configurations (Supabase client)
@@ -92,9 +93,21 @@ src/
   - **Voting System:** Upvote/Downvote posts to bubble up the best content.
   - **Post Details:** Click on a post to view it in a dedicated modal with larger images and full content.
   - **Full Screen Images:** Click on any image to view it in full screen.
+- **Comments & Discussions:**
+  - **Comment on Posts:** Users can comment on any post to start discussions.
+  - **Nested Replies:** Reply to comments with one level of nesting (like Twitter/X).
+  - **Smart Loading:** Comments load 5 at a time with a "Load more" button.
+  - **Real-time Counters:** See the number of comments on each post at a glance.
+  - **Reply Threading:** View and collapse reply threads for better readability.
+  - **Delete Comments:** Users can delete their own comments and replies.
 - **User Interaction:**
   - Follow/Unfollow other users.
   - Search for other users to follow.
+  - View followers and following lists in beautiful modals.
+- **Profile Integration:**
+  - **User Posts Tab:** View all posts from a specific user in their profile.
+  - **Infinite Scroll:** Posts load automatically as you scroll (newest to oldest).
+  - **Followers Display:** See who follows you and who you're following with interactive lists.
 
 ### 6. Responsive Design & UX
 
@@ -167,11 +180,29 @@ The `src/services` directory acts as an abstraction layer between the Vue compon
   - Manage pagination and search logic.
 
 - **`user-lists.ts`**:
+
   - Interacts directly with Supabase tables (`custom_lists`, `list_items`, `user_media`).
   - Provides methods for:
     - Creating/Deleting lists.
     - Adding/Removing items from lists.
     - Fetching user-specific media statuses.
+
+- **`social.ts`**:
+  - Manages all social features and community interactions.
+  - **Posts Management:**
+    - Create, fetch, and vote on posts.
+    - Paginated post loading (10 per page).
+    - User-specific post fetching for profiles.
+  - **Comments System:**
+    - Create, fetch, and delete comments.
+    - Nested replies with one level of depth.
+    - Paginated comment loading (5 per page).
+    - Automatic comment counting per post.
+  - **Social Interactions:**
+    - Follow/Unfollow users.
+    - Fetch followers and following lists.
+    - Search for users by username.
+    - Track follower/following counts.
 
 ## 🛡️ Routing
 
@@ -186,7 +217,8 @@ The application uses `vue-router` with the following structure:
   - `/manga` (Manga Dashboard)
   - `/anime/:id` (Anime Details)
   - `/manga/:id` (Manga Details)
-  - `/profile` (User Profile)
+  - `/profile` (User Profile & Lists)
+  - `/social` (Community Feed & Social Interactions)
 
 ## 🎨 Styling System
 
@@ -198,6 +230,45 @@ The application uses `vue-router` with the following structure:
   - `lg`: 1024px
   - `xl`: 1280px
 - **Dark Mode:** The UI is designed with a clean, light/dark aesthetic (currently optimized for a modern light theme with dark accents).
+
+## 🗄️ Database Schema
+
+The application uses Supabase (PostgreSQL) with the following key tables:
+
+### Social Features Tables
+
+- **`posts`**
+  - Stores user-created posts with title, content, and images.
+  - Includes vote counts and timestamps.
+- **`post_votes`**
+  - Tracks upvotes/downvotes on posts.
+  - One vote per user per post.
+- **`post_comments`**
+  - Stores comments and replies on posts.
+  - **Nested Structure:** `parent_comment_id` enables one level of reply threading.
+  - **Auto-counting:** `replies_count` field updated via database triggers.
+- **`follows`**
+  - Manages follower/following relationships.
+  - Enables social graph features.
+
+### User & List Tables
+
+- **`profiles`**
+  - Extended user information (username, avatar, follower counts).
+  - Linked to Supabase Auth users.
+- **`custom_lists`**
+  - User-created custom lists for organizing anime/manga.
+- **`list_items`**
+  - Items within custom lists.
+- **`user_media`**
+  - Tracks user's anime/manga status (Watching, Completed, etc.).
+
+### Database Features
+
+- **Row Level Security (RLS):** All tables have policies ensuring users can only modify their own data.
+- **Foreign Key Constraints:** Maintain data integrity across relationships.
+- **Triggers & Functions:** Automatic counter updates for replies and followers.
+- **Indexes:** Optimized queries for comments, votes, and follows.
 
 ---
 

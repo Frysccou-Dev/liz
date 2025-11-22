@@ -46,7 +46,7 @@
           <div
             v-for="(img, idx) in post.images"
             :key="idx"
-            class="rounded-xl overflow-hidden bg-gray-100 shadow-sm flex justify-center items-center bg-black/5 aspect-[4/5] cursor-pointer hover:opacity-95 transition-opacity"
+            class="rounded-xl overflow-hidden bg-gray-100 shadow-sm flex justify-center items-center bg-black/5 aspect-4/5 cursor-pointer hover:opacity-95 transition-opacity"
             :class="{
               'col-span-2': post.images.length === 1 || (post.images.length === 3 && idx === 0),
             }"
@@ -55,6 +55,14 @@
             <img :src="img" class="w-full h-full object-cover" />
           </div>
         </div>
+
+        <PostComments
+          :post-id="post.id"
+          :current-user-id="currentUserId"
+          :current-username="currentUsername"
+          :current-user-avatar="currentUserAvatar"
+          @update-count="updateCommentsCount"
+        />
       </div>
 
       <div
@@ -84,7 +92,7 @@
 
     <div
       v-if="selectedImage"
-      class="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4"
+      class="fixed inset-0 z-60 bg-black/90 flex items-center justify-center p-4"
       @click.stop="selectedImage = null"
     >
       <img :src="selectedImage" class="max-w-full max-h-full rounded-lg" />
@@ -96,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import {
   X as XIcon,
   ArrowBigUp as ArrowBigUpIcon,
@@ -104,6 +112,8 @@ import {
 } from "lucide-vue-next";
 import type { Post } from "@/services/social";
 import { socialService } from "@/services/social";
+import { useAuth } from "@/composables/useAuth";
+import PostComments from "./post-comments.vue";
 
 const props = defineProps<{
   post: Post;
@@ -113,6 +123,12 @@ const emit = defineEmits<{
   (e: "close"): void;
   (e: "update:post", post: Post): void;
 }>();
+
+const { user, profile } = useAuth();
+
+const currentUserId = computed(() => user.value?.id);
+const currentUsername = computed(() => profile.value?.username);
+const currentUserAvatar = computed(() => profile.value?.avatar_url);
 
 const formatDate = (dateStr: string) => {
   return new Date(dateStr).toLocaleDateString(undefined, {
@@ -150,6 +166,13 @@ const handleVote = async (type: 1 | -1) => {
       vote_count: (props.post.vote_count || 0) + voteDiff,
     });
   } catch {}
+};
+
+const updateCommentsCount = (count: number) => {
+  emit("update:post", {
+    ...props.post,
+    comments_count: count,
+  });
 };
 </script>
 

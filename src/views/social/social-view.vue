@@ -63,6 +63,7 @@
             :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'"
             @update:post="updatePost"
             @click="selectedPost = post"
+            @show-comments="selectedPost = post"
           />
         </div>
       </div>

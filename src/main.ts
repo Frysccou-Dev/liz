@@ -7,6 +7,17 @@ import { createPinia } from "pinia";
 
 const app = createApp(App);
 
+app.config.errorHandler = (err, instance, info) => {
+  console.error("Global error:", err);
+  console.error("Error info:", info);
+  console.error("Component:", instance);
+};
+
+window.addEventListener("unhandledrejection", (event) => {
+  console.error("Unhandled promise rejection:", event.reason);
+  event.preventDefault();
+});
+
 app.use(createPinia());
 app.use(router);
 
