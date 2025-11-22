@@ -1,12 +1,27 @@
 <template>
   <div class="min-h-screen py-12 px-4">
     <div class="max-w-5xl mx-auto space-y-8">
-      <ProfileHeader :user="user" :profile="profile" @sign-out="handleSignOut" />
+      <ProfileHeader
+        :user="user"
+        :profile="profile"
+        @sign-out="handleSignOut"
+        @show-followers="showFollowersModal = true"
+        @show-following="showFollowingModal = true"
+      />
 
       <ProfileTabs v-model:activeTab="activeTab" :tabs="tabs" />
 
+      <ProfilePosts
+        v-if="activeTab === 'posts'"
+        :posts="userPosts"
+        :loading="loadingPosts"
+        :has-more="hasMorePosts"
+        @update:post="updatePost"
+        @open-post="selectedPost = $event"
+      />
+
       <ProfileOverview
-        v-if="activeTab === 'overview'"
+        v-else-if="activeTab === 'overview'"
         :lists="lists"
         :loading="loadingLists"
         @create-list="showCreateListModal = true"
@@ -15,7 +30,7 @@
       />
 
       <ProfileMediaList
-        v-else
+        v-else-if="activeTab === 'anime' || activeTab === 'manga'"
         :media-list="activeTab === 'anime' ? animeList : mangaList"
         :loading="loadingMedia"
         :type="activeTab === 'anime' ? 'anime' : 'manga'"
@@ -42,11 +57,40 @@
       @go-to-media="goToMedia"
       @remove-item="removeListItem"
     />
+
+    <FollowersModal
+      v-if="showFollowersModal"
+      title="Followers"
+      :users="followers"
+      :loading="loadingFollowers"
+      empty-message="No followers yet"
+      :current-user-id="user?.id"
+      @close="showFollowersModal = false"
+      @toggle-follow="toggleFollowInModal"
+    />
+
+    <FollowersModal
+      v-if="showFollowingModal"
+      title="Following"
+      :users="following"
+      :loading="loadingFollowing"
+      empty-message="Not following anyone yet"
+      :current-user-id="user?.id"
+      @close="showFollowingModal = false"
+      @toggle-follow="toggleFollowInModal"
+    />
+
+    <PostDetailModal
+      v-if="selectedPost"
+      :post="selectedPost"
+      @close="selectedPost = null"
+      @update:post="updatePost"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuth } from "@/composables/useAuth";
 import {
@@ -55,19 +99,24 @@ import {
   type ListItem,
   type MediaStatus,
 } from "@/services/user-lists";
+import { socialService, type Post, type Profile } from "@/services/social";
 
 import ProfileHeader from "./components/profile-header.vue";
 import ProfileTabs from "./components/profile-tabs.vue";
 import ProfileOverview from "./components/profile-overview.vue";
 import ProfileMediaList from "./components/profile-media-list.vue";
+import ProfilePosts from "./components/profile-posts.vue";
 import CreateListModal from "./components/create-list-modal.vue";
 import ListDetailsModal from "./components/list-details-modal.vue";
+import FollowersModal from "./components/followers-modal.vue";
+import PostDetailModal from "@/views/social/components/post-detail-modal.vue";
 
 const { user, profile, signOut } = useAuth();
 const router = useRouter();
 
-const activeTab = ref("overview");
+const activeTab = ref("posts");
 const tabs = [
+  { id: "posts", label: "Posts" },
   { id: "overview", label: "Overview" },
   { id: "anime", label: "Anime List" },
   { id: "manga", label: "Manga List" },
@@ -89,6 +138,19 @@ const animeList = ref<MediaStatus[]>([]);
 const mangaList = ref<MediaStatus[]>([]);
 const mediaStatuses = ["WATCHING", "COMPLETED", "PLAN_TO_WATCH", "DROPPED", "ON_HOLD"];
 const loadingMedia = ref(true);
+
+const userPosts = ref<Post[]>([]);
+const loadingPosts = ref(false);
+const postsPage = ref(0);
+const hasMorePosts = ref(true);
+const selectedPost = ref<Post | null>(null);
+
+const showFollowersModal = ref(false);
+const showFollowingModal = ref(false);
+const followers = ref<Profile[]>([]);
+const following = ref<Profile[]>([]);
+const loadingFollowers = ref(false);
+const loadingFollowing = ref(false);
 
 const handleSignOut = async () => {
   await signOut();
@@ -175,9 +237,96 @@ const removeListItem = async (item: ListItem) => {
   }
 };
 
+const fetchUserPosts = async (reset = false) => {
+  if (loadingPosts.value || (!hasMorePosts.value && !reset)) return;
+  if (!user.value?.id) return;
+
+  loadingPosts.value = true;
+  if (reset) {
+    postsPage.value = 0;
+    userPosts.value = [];
+    hasMorePosts.value = true;
+  }
+
+  try {
+    const newPosts = await socialService.getUserPosts(user.value.id, postsPage.value);
+    if (newPosts.length < 10) {
+      hasMorePosts.value = false;
+    }
+    userPosts.value.push(...newPosts);
+    postsPage.value++;
+  } catch (error) {
+    console.error(error);
+  } finally {
+    loadingPosts.value = false;
+  }
+};
+
+const handlePostsScroll = () => {
+  const { scrollTop, clientHeight, scrollHeight } = document.documentElement;
+  if (scrollTop + clientHeight >= scrollHeight - 100 && activeTab.value === "posts") {
+    fetchUserPosts();
+  }
+};
+
+const updatePost = (updatedPost: Post) => {
+  const index = userPosts.value.findIndex((p) => p.id === updatedPost.id);
+  if (index !== -1) {
+    userPosts.value[index] = updatedPost;
+  }
+};
+
+const fetchFollowers = async () => {
+  if (!user.value?.id) return;
+  loadingFollowers.value = true;
+  try {
+    followers.value = await socialService.getFollowers(user.value.id);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    loadingFollowers.value = false;
+  }
+};
+
+const fetchFollowing = async () => {
+  if (!user.value?.id) return;
+  loadingFollowing.value = true;
+  try {
+    following.value = await socialService.getFollowing(user.value.id);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    loadingFollowing.value = false;
+  }
+};
+
+const toggleFollowInModal = async (targetUser: Profile) => {
+  try {
+    if (targetUser.is_following) {
+      await socialService.unfollowUser(targetUser.id);
+      targetUser.is_following = false;
+      if (targetUser.followers_count) targetUser.followers_count--;
+    } else {
+      await socialService.followUser(targetUser.id);
+      targetUser.is_following = true;
+      targetUser.followers_count = (targetUser.followers_count || 0) + 1;
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 onMounted(() => {
   fetchLists();
   fetchMediaLists();
+  fetchUserPosts(true);
+  fetchFollowers();
+  fetchFollowing();
+  window.addEventListener("scroll", handlePostsScroll);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("scroll", handlePostsScroll);
 });
 
 const goToMedia = (id: number, type: string) => {

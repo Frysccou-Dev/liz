@@ -9,6 +9,8 @@ export interface Profile {
   username: string;
   full_name?: string;
   avatar_url?: string;
+  followers_count?: number;
+  following_count?: number;
   updated_at?: string;
 }
 

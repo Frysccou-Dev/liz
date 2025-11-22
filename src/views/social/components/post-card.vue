@@ -55,6 +55,13 @@
           >
             <ArrowBigDownIcon class="w-5 h-5" />
           </button>
+          <button
+            @click.stop="$emit('show-comments')"
+            class="flex items-center gap-1.5 text-sm hover:text-blue-600 transition-colors"
+          >
+            <MessageCircleIcon class="w-5 h-5" />
+            <span v-if="post.comments_count">{{ post.comments_count }}</span>
+          </button>
         </div>
       </div>
     </div>
@@ -77,6 +84,7 @@ import { ref, computed } from "vue";
 import {
   ArrowBigUp as ArrowBigUpIcon,
   ArrowBigDown as ArrowBigDownIcon,
+  MessageCircle as MessageCircleIcon,
   X as XIcon,
 } from "lucide-vue-next";
 import type { Post } from "@/services/social";
@@ -88,6 +96,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: "update:post", post: Post): void;
+  (e: "show-comments"): void;
 }>();
 
 const selectedImage = ref<string | null>(null);
