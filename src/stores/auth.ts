@@ -63,6 +63,21 @@ export const useAuthStore = defineStore("auth", () => {
     router.push("/login");
   };
 
+  const updateAvatar = async (url: string) => {
+    if (!user.value) return;
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ avatar_url: url })
+        .eq("id", user.value.id);
+
+      if (error) throw error;
+      await fetchProfile();
+    } catch (error) {
+      throw error;
+    }
+  };
+
   return {
     user,
     profile,
@@ -71,5 +86,6 @@ export const useAuthStore = defineStore("auth", () => {
     initializeAuth,
     signOut,
     fetchProfile,
+    updateAvatar,
   };
 });

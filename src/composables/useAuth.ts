@@ -5,7 +5,7 @@ import { storeToRefs } from "pinia";
 export function useAuth() {
   const authStore = useAuthStore();
   const { user, profile, loading } = storeToRefs(authStore);
-  const { initializeAuth, signOut } = authStore;
+  const { initializeAuth, signOut, updateAvatar } = authStore;
 
   return {
     user: computed(() => user.value),
@@ -13,5 +13,6 @@ export function useAuth() {
     loading: computed(() => loading.value),
     initializeAuth,
     signOut,
+    updateAvatar,
   };
 }
