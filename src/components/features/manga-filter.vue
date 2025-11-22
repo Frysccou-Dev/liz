@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full flex justify-center px-4 mb-12 relative z-50">
+  <div class="w-full flex justify-center px-4 mb-12 relative z-30">
     <div class="w-[min(1100px,100%)]">
       <div
         class="bg-white/6 backdrop-blur-md border border-gray-200 rounded-2xl p-6 flex flex-col gap-6 shadow-sm"
@@ -17,6 +17,7 @@
           </div>
           <div class="flex gap-2">
             <button
+              v-if="hasActiveFilters"
               @click="clearFilters"
               class="h-12 w-12 bg-white border border-gray-200 text-gray-500 rounded-xl hover:bg-gray-50 hover:text-red-500 transition-all flex items-center justify-center shadow-sm"
               title="Clear filters"
@@ -75,6 +76,16 @@ const filters = reactive<SearchFilters>({
 });
 
 const genres = ref<string[]>([]);
+
+const hasActiveFilters = computed(() => {
+  return (
+    (filters.search && filters.search.trim() !== "") ||
+    (filters.genre && filters.genre.length > 0) ||
+    filters.year !== undefined ||
+    (filters.format && filters.format.length > 0) ||
+    filters.status !== undefined
+  );
+});
 
 const currentYear = new Date().getFullYear() + 1;
 const years = Array.from({ length: 35 }, (_, i) => currentYear - i);

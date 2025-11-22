@@ -1,5 +1,7 @@
 <template>
-  <div class="flex justify-center items-center gap-12 md:gap-24 w-full max-w-5xl px-8 flex-wrap">
+  <div
+    class="flex justify-center items-center gap-8 md:gap-16 lg:gap-24 w-full max-w-5xl px-8 flex-wrap"
+  >
     <div
       v-for="(stat, index) in stats"
       :key="index"

@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full flex justify-center px-4 mb-12 relative z-50">
+  <div class="w-full flex justify-center px-4 mb-12 relative z-30">
     <div class="w-[min(1100px,100%)]">
       <div
         class="bg-white/6 backdrop-blur-md border border-gray-200 rounded-2xl p-6 flex flex-col gap-6 shadow-sm"
