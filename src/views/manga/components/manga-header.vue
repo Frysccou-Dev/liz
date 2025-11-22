@@ -18,13 +18,15 @@
     </div>
 
     <div class="absolute bottom-0 left-0 w-full px-4 pb-8 md:pb-12">
-      <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-end gap-8">
+      <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-end gap-8">
         <div class="hidden md:block w-52 rounded-lg overflow-hidden shadow-2xl -mb-20 z-10">
           <img :src="manga.coverImage.extraLarge" :alt="manga.title.romaji" class="w-full h-auto" />
         </div>
 
         <div class="flex-1 mb-4">
-          <h2 class="text-4xl md:text-6xl font-bold text-white leading-tight mb-4">
+          <h2
+            class="text-2xl sm:text-3xl md:text-6xl font-bold text-white leading-tight mb-4 line-clamp-2 md:line-clamp-none"
+          >
             {{ manga.title.romaji }}
           </h2>
           <div class="flex flex-wrap gap-4 text-sm font-medium text-gray-600">

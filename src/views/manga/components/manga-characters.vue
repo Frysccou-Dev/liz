@@ -5,7 +5,8 @@
       <div
         v-for="char in characters"
         :key="char.node.id"
-        class="group relative rounded-xl overflow-hidden bg-gray-50"
+        @click="toggleChar(char.node.id)"
+        class="group relative rounded-xl overflow-hidden bg-gray-50 cursor-pointer"
       >
         <div class="aspect-3/4 overflow-hidden">
           <img
@@ -15,7 +16,10 @@
           />
         </div>
         <div
-          class="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4"
+          class="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent transition-opacity duration-300 flex flex-col justify-end p-4"
+          :class="
+            activeCharId === char.node.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+          "
         >
           <p class="text-white font-medium text-sm line-clamp-1">{{ char.node.name.full }}</p>
           <p class="text-gray-300 text-xs">{{ char.role }}</p>
@@ -26,9 +30,20 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
 import type { Manga } from "@/services/anilist-manga";
 
 defineProps<{
   characters: NonNullable<Manga["characters"]>["edges"];
 }>();
+
+const activeCharId = ref<number | null>(null);
+
+const toggleChar = (id: number) => {
+  if (activeCharId.value === id) {
+    activeCharId.value = null;
+  } else {
+    activeCharId.value = id;
+  }
+};
 </script>
