@@ -101,6 +101,7 @@ const links = [
   { label: "Home", path: "/" },
   { label: "Animes", path: "/home" },
   { label: "Mangas", path: "/manga" },
+  { label: "Community", path: "/social" },
 ];
 </script>
 

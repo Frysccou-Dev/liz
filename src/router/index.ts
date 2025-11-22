@@ -48,6 +48,12 @@ const router = createRouter({
       component: () => import("../views/profile/profile-view.vue"),
       meta: { requiresAuth: true },
     },
+    {
+      path: "/social",
+      name: "Social",
+      component: () => import("../views/social/social-view.vue"),
+      meta: { requiresAuth: true },
+    },
   ],
 });
 

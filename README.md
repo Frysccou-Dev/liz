@@ -40,6 +40,7 @@ src/
     ├── home/        # Anime discovery dashboard
     ├── landing/     # Landing page
     ├── manga/       # Manga discovery & details
+    ├── social/      # Community feed & social features
     └── profile/     # User profile & list management
 ```
 
@@ -81,7 +82,21 @@ src/
   - Fetches detailed media information for the final recommendation.
 - **Minimalist UI:** Clean, monochrome design with subtle animations and a non-intrusive floating trigger.
 
-### 5. Responsive Design & UX
+### 5. Community & Social Feed 🌍
+
+- **Social Feed:** A dynamic feed where users can share their thoughts, reviews, or just talk about anime/manga.
+- **Create Posts:**
+  - Users can create posts with a title and content.
+  - **Image Uploads:** Support for uploading up to 4 images per post (powered by Cloudinary).
+- **Interactive Posts:**
+  - **Voting System:** Upvote/Downvote posts to bubble up the best content.
+  - **Post Details:** Click on a post to view it in a dedicated modal with larger images and full content.
+  - **Full Screen Images:** Click on any image to view it in full screen.
+- **User Interaction:**
+  - Follow/Unfollow other users.
+  - Search for other users to follow.
+
+### 6. Responsive Design & UX
 
 - **Mobile-First:** Optimized layouts for mobile, tablet, and desktop.
 - **Horizontal Carousels:** Swipeable lists for media items on mobile devices.
@@ -97,14 +112,22 @@ src/
 
 ### Environment Variables
 
-Create a `.env` file in the root directory with the following Supabase credentials:
+Create a `.env` file in the root directory with the following credentials. You can use `.env.example` as a reference.
 
 ```env
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-VITE_LIZBETH_SYSTEM_PROMPT="You are Lizbeth, a passionate and knowledgeable anime and manga expert..."
-GEMINI_API_KEY=your_gemini_api_key
+# Supabase enviroment variables (Database)
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_KEY=your_supabase_anon_key
 
+# Chatbot enviroment variables (Lizbeth and her Prompt)
+GEMINI_API_KEY=your_gemini_api_key
+VITE_LIZBETH_SYSTEM_PROMPT="You are Lizbeth..."
+
+# Cloudinary enviroment variables (Uploading images for posts)
+VITE_CLOUDINARY_CLOUD_NAME=your_cloud_name
+VITE_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
+VITE_CLOUDINARY_API_KEY=your_api_key
+VITE_CLOUDINARY_API_SECRET=your_api_secret
 ```
 
 ### Installation
