@@ -47,6 +47,8 @@
       @close="selectedPost = null"
       @update:post="updatePost"
     />
+
+    <Loader ref="loaderRef" />
   </div>
 </template>
 
@@ -55,6 +57,7 @@ import { ref, onMounted, onUnmounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuth } from "@/composables/useAuth";
 import { socialService, type Post, type Profile } from "@/services/social";
+import Loader from "@/components/layout/loader.vue";
 
 import ProfileHeader from "./components/profile-header.vue";
 import ProfileTabs from "./components/profile-tabs.vue";
@@ -64,6 +67,7 @@ import PostDetailModal from "@/views/social/components/post-detail-modal.vue";
 const { user: currentUser } = useAuth();
 const router = useRouter();
 const route = useRoute();
+const loaderRef = ref<InstanceType<typeof Loader>>();
 
 const displayProfile = ref<Profile | null>(null);
 const isFollowing = ref(false);
@@ -128,13 +132,13 @@ const loadProfileData = async (userId: string) => {
     return;
   }
 
+  if (loaderRef.value) loaderRef.value.showLoader();
   loadingProfile.value = true;
   try {
     const profileData = await socialService.getProfile(userId);
     displayProfile.value = profileData;
     isFollowing.value = profileData.is_following || false;
 
-    // Reset and fetch data
     userPosts.value = [];
 
     fetchUserPosts(true);
@@ -143,6 +147,7 @@ const loadProfileData = async (userId: string) => {
     router.push({ name: "NotFound" });
   } finally {
     loadingProfile.value = false;
+    if (loaderRef.value) loaderRef.value.hideLoader();
   }
 };
 

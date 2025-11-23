@@ -64,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import Loader from "@/components/layout/loader.vue";
 import PageTitle from "@/components/ui/page-title.vue";
 import MangaFilter from "@/components/features/manga-filter.vue";
@@ -138,6 +138,10 @@ const clearSearch = () => {
   currentFilters.value = {};
   currentPage.value = 1;
 };
+
+onMounted(() => {
+  if (loaderRef.value) loaderRef.value.showLoader();
+});
 </script>
 
 <style scoped>

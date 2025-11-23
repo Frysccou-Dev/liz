@@ -214,6 +214,8 @@
     >
       <PlusIcon class="w-6 h-6" />
     </button>
+
+    <Loader ref="loaderRef" />
   </div>
 </template>
 
@@ -226,9 +228,11 @@ import { socialService, type Post, type Profile } from "@/services/social";
 import PostCard from "./components/post-card.vue";
 import CreatePostModal from "./components/create-post-modal.vue";
 import PostDetailModal from "./components/post-detail-modal.vue";
+import Loader from "@/components/layout/loader.vue";
 
 const { profile } = useAuth();
 const router = useRouter();
+const loaderRef = ref<InstanceType<typeof Loader>>();
 const posts = ref<Post[]>([]);
 const loading = ref(false);
 const error = ref<string | null>(null);
@@ -246,6 +250,7 @@ const fetchPosts = async (reset = false) => {
   loading.value = true;
   error.value = null;
   if (reset) {
+    loaderRef.value?.showLoader();
     page.value = 0;
     posts.value = [];
     hasMore.value = true;
@@ -267,6 +272,9 @@ const fetchPosts = async (reset = false) => {
     error.value = message;
   } finally {
     loading.value = false;
+    if (reset) {
+      loaderRef.value?.hideLoader();
+    }
   }
 };
 

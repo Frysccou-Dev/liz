@@ -63,6 +63,8 @@
       @close="selectedPost = null"
       @update:post="updatePost"
     />
+
+    <Loader ref="loaderRef" />
   </div>
 </template>
 
@@ -86,9 +88,11 @@ import ProfilePosts from "./components/profile-posts.vue";
 import CreateListModal from "./components/create-list-modal.vue";
 import ListDetailsModal from "./components/list-details-modal.vue";
 import PostDetailModal from "@/views/social/components/post-detail-modal.vue";
+import Loader from "@/components/layout/loader.vue";
 
 const { user, profile, signOut } = useAuth();
 const router = useRouter();
+const loaderRef = ref<InstanceType<typeof Loader>>();
 
 const activeTab = ref("posts");
 const tabs = [
@@ -245,10 +249,19 @@ const updatePost = (updatedPost: Post) => {
   }
 };
 
+const loadInitialData = async () => {
+  if (loaderRef.value) loaderRef.value.showLoader();
+  try {
+    await Promise.all([fetchLists(), fetchMediaLists(), fetchUserPosts(true)]);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    if (loaderRef.value) loaderRef.value.hideLoader();
+  }
+};
+
 onMounted(() => {
-  fetchLists();
-  fetchMediaLists();
-  fetchUserPosts(true);
+  loadInitialData();
   window.addEventListener("scroll", handlePostsScroll);
 });
 
