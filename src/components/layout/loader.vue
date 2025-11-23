@@ -18,9 +18,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 
-const isVisible = ref(true);
+const isVisible = ref(false);
 
 const hideLoader = () => {
   isVisible.value = false;
@@ -29,24 +29,6 @@ const hideLoader = () => {
 const showLoader = () => {
   isVisible.value = true;
 };
-
-onMounted(() => {
-  const handleLoad = () => {
-    setTimeout(() => {
-      hideLoader();
-    }, 300);
-  };
-
-  window.addEventListener("load", handleLoad);
-
-  if (document.readyState === "complete") {
-    handleLoad();
-  }
-
-  return () => {
-    window.removeEventListener("load", handleLoad);
-  };
-});
 
 defineExpose({
   hideLoader,

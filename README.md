@@ -108,6 +108,7 @@ src/
   - **User Posts Tab:** View all posts from a specific user in their profile.
   - **Infinite Scroll:** Posts load automatically as you scroll (newest to oldest).
   - **Followers Display:** See who follows you and who you're following with interactive lists.
+  - **Public Profiles:** View other users' profiles via `/profile/:userId` to see their posts and follow them.
 
 ### 6. Responsive Design & UX
 
@@ -218,6 +219,7 @@ The application uses `vue-router` with the following structure:
   - `/anime/:id` (Anime Details)
   - `/manga/:id` (Manga Details)
   - `/profile` (User Profile & Lists)
+  - `/profile/:userId` (View Other User's Profile)
   - `/social` (Community Feed & Social Interactions)
 
 ## ❗️ 404 - Not Found
