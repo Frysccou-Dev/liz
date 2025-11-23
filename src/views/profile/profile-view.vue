@@ -4,9 +4,8 @@
       <ProfileHeader
         :user="user"
         :profile="profile"
+        :is-own-profile="true"
         @sign-out="handleSignOut"
-        @show-followers="showFollowersModal = true"
-        @show-following="showFollowingModal = true"
       />
 
       <ProfileTabs v-model:activeTab="activeTab" :tabs="tabs" />
@@ -58,28 +57,6 @@
       @remove-item="removeListItem"
     />
 
-    <FollowersModal
-      v-if="showFollowersModal"
-      title="Followers"
-      :users="followers"
-      :loading="loadingFollowers"
-      empty-message="No followers yet"
-      :current-user-id="user?.id"
-      @close="showFollowersModal = false"
-      @toggle-follow="toggleFollowInModal"
-    />
-
-    <FollowersModal
-      v-if="showFollowingModal"
-      title="Following"
-      :users="following"
-      :loading="loadingFollowing"
-      empty-message="Not following anyone yet"
-      :current-user-id="user?.id"
-      @close="showFollowingModal = false"
-      @toggle-follow="toggleFollowInModal"
-    />
-
     <PostDetailModal
       v-if="selectedPost"
       :post="selectedPost"
@@ -99,7 +76,7 @@ import {
   type ListItem,
   type MediaStatus,
 } from "@/services/user-lists";
-import { socialService, type Post, type Profile } from "@/services/social";
+import { socialService, type Post } from "@/services/social";
 
 import ProfileHeader from "./components/profile-header.vue";
 import ProfileTabs from "./components/profile-tabs.vue";
@@ -108,7 +85,6 @@ import ProfileMediaList from "./components/profile-media-list.vue";
 import ProfilePosts from "./components/profile-posts.vue";
 import CreateListModal from "./components/create-list-modal.vue";
 import ListDetailsModal from "./components/list-details-modal.vue";
-import FollowersModal from "./components/followers-modal.vue";
 import PostDetailModal from "@/views/social/components/post-detail-modal.vue";
 
 const { user, profile, signOut } = useAuth();
@@ -144,13 +120,6 @@ const loadingPosts = ref(false);
 const postsPage = ref(0);
 const hasMorePosts = ref(true);
 const selectedPost = ref<Post | null>(null);
-
-const showFollowersModal = ref(false);
-const showFollowingModal = ref(false);
-const followers = ref<Profile[]>([]);
-const following = ref<Profile[]>([]);
-const loadingFollowers = ref(false);
-const loadingFollowing = ref(false);
 
 const handleSignOut = async () => {
   await signOut();
@@ -276,52 +245,10 @@ const updatePost = (updatedPost: Post) => {
   }
 };
 
-const fetchFollowers = async () => {
-  if (!user.value?.id) return;
-  loadingFollowers.value = true;
-  try {
-    followers.value = await socialService.getFollowers(user.value.id);
-  } catch (error) {
-    console.error(error);
-  } finally {
-    loadingFollowers.value = false;
-  }
-};
-
-const fetchFollowing = async () => {
-  if (!user.value?.id) return;
-  loadingFollowing.value = true;
-  try {
-    following.value = await socialService.getFollowing(user.value.id);
-  } catch (error) {
-    console.error(error);
-  } finally {
-    loadingFollowing.value = false;
-  }
-};
-
-const toggleFollowInModal = async (targetUser: Profile) => {
-  try {
-    if (targetUser.is_following) {
-      await socialService.unfollowUser(targetUser.id);
-      targetUser.is_following = false;
-      if (targetUser.followers_count) targetUser.followers_count--;
-    } else {
-      await socialService.followUser(targetUser.id);
-      targetUser.is_following = true;
-      targetUser.followers_count = (targetUser.followers_count || 0) + 1;
-    }
-  } catch (error) {
-    console.error(error);
-  }
-};
-
 onMounted(() => {
   fetchLists();
   fetchMediaLists();
   fetchUserPosts(true);
-  fetchFollowers();
-  fetchFollowing();
   window.addEventListener("scroll", handlePostsScroll);
 });
 

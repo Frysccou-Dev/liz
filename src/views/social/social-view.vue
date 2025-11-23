@@ -90,6 +90,7 @@
                 v-for="user in searchResults"
                 :key="user.id"
                 class="p-3 hover:bg-gray-50 flex items-center justify-between cursor-pointer"
+                @click="goToProfile(user)"
               >
                 <div class="flex items-center gap-3">
                   <div class="w-8 h-8 rounded-full bg-gray-200 overflow-hidden">
@@ -136,6 +137,78 @@
     />
 
     <button
+      @click="showSearchModal = true"
+      class="lg:hidden fixed right-4 w-14 h-14 bg-white text-gray-900 border border-gray-200 rounded-full shadow-lg flex items-center justify-center z-40 bottom-36 md:bottom-20"
+    >
+      <SearchIcon class="w-6 h-6" />
+    </button>
+
+    <div
+      v-if="showSearchModal"
+      class="fixed inset-0 z-50 bg-white/80 backdrop-blur-sm flex items-start justify-center pt-20 px-4"
+    >
+      <div class="absolute inset-0" @click="showSearchModal = false"></div>
+      <div
+        class="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-gray-100 p-4 relative z-10"
+      >
+        <div class="relative">
+          <SearchIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search profiles"
+            class="w-full bg-gray-100 border-none rounded-full py-3 pl-10 pr-10 text-sm focus:ring-2 focus:ring-gray-900"
+            @input="handleSearch"
+            autofocus
+          />
+          <button
+            @click="showSearchModal = false"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          >
+            <XIcon class="w-4 h-4" />
+          </button>
+        </div>
+
+        <div
+          v-if="searchResults.length > 0"
+          class="mt-4 max-h-[60vh] overflow-y-auto divide-y divide-gray-100"
+        >
+          <div
+            v-for="user in searchResults"
+            :key="user.id"
+            class="p-3 hover:bg-gray-50 flex items-center justify-between cursor-pointer"
+            @click="goToProfile(user)"
+          >
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-gray-200 overflow-hidden">
+                <img
+                  v-if="user.avatar_url"
+                  :src="user.avatar_url"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <div>
+                <p class="font-bold text-sm text-gray-900">{{ user.username }}</p>
+                <p class="text-xs text-gray-500">{{ user.followers_count }} followers</p>
+              </div>
+            </div>
+            <button
+              @click.stop="toggleFollow(user)"
+              class="px-3 py-1 rounded-full text-xs font-medium transition-colors"
+              :class="
+                user.is_following
+                  ? 'border border-gray-200 text-gray-900 hover:bg-red-50 hover:text-red-600 hover:border-red-200'
+                  : 'bg-gray-900 text-white hover:bg-gray-800'
+              "
+            >
+              {{ user.is_following ? "Following" : "Follow" }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button
       @click="showCreateModal = true"
       class="md:hidden fixed bottom-20 right-4 w-14 h-14 bg-gray-900 text-white rounded-full shadow-lg flex items-center justify-center z-40"
     >
@@ -146,7 +219,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
-import { Search as SearchIcon, Plus as PlusIcon } from "lucide-vue-next";
+import { Search as SearchIcon, Plus as PlusIcon, X as XIcon } from "lucide-vue-next";
+import { useRouter } from "vue-router";
 import { useAuth } from "@/composables/useAuth";
 import { socialService, type Post, type Profile } from "@/services/social";
 import PostCard from "./components/post-card.vue";
@@ -154,10 +228,12 @@ import CreatePostModal from "./components/create-post-modal.vue";
 import PostDetailModal from "./components/post-detail-modal.vue";
 
 const { profile } = useAuth();
+const router = useRouter();
 const posts = ref<Post[]>([]);
 const loading = ref(false);
 const error = ref<string | null>(null);
 const showCreateModal = ref(false);
+const showSearchModal = ref(false);
 const selectedPost = ref<Post | null>(null);
 const searchQuery = ref("");
 const searchResults = ref<Profile[]>([]);
@@ -234,6 +310,13 @@ const toggleFollow = async (user: Profile) => {
       user.followers_count++;
     }
   } catch {}
+};
+
+const goToProfile = (user: Profile) => {
+  router.push({ name: "UserProfile", params: { userId: user.id } });
+  showSearchModal.value = false;
+  searchQuery.value = "";
+  searchResults.value = [];
 };
 
 onMounted(() => {
