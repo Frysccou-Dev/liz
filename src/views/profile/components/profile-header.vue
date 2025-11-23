@@ -17,6 +17,7 @@
         </span>
       </div>
       <button
+        v-if="isOwnProfile"
         @click="startEditing"
         class="absolute bottom-0 right-0 bg-gray-900 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-gray-800 cursor-pointer"
         title="Change Avatar"
@@ -57,33 +58,36 @@
         <p class="text-sm md:text-base text-gray-500">{{ user?.email }}</p>
 
         <div class="flex gap-4 mt-3">
-          <button
-            @click="$emit('show-followers')"
-            class="group flex items-center gap-1.5 hover:bg-gray-50 px-3 py-1.5 rounded-lg transition-colors"
-          >
+          <div class="flex items-center gap-1.5 px-3 py-1.5">
             <span class="text-sm font-bold text-gray-900">{{ profile?.followers_count || 0 }}</span>
-            <span class="text-sm text-gray-500 group-hover:text-gray-900 transition-colors"
-              >Followers</span
-            >
-          </button>
-          <button
-            @click="$emit('show-following')"
-            class="group flex items-center gap-1.5 hover:bg-gray-50 px-3 py-1.5 rounded-lg transition-colors"
-          >
+            <span class="text-sm text-gray-500">Followers</span>
+          </div>
+          <div class="flex items-center gap-1.5 px-3 py-1.5">
             <span class="text-sm font-bold text-gray-900">{{ profile?.following_count || 0 }}</span>
-            <span class="text-sm text-gray-500 group-hover:text-gray-900 transition-colors"
-              >Following</span
-            >
-          </button>
+            <span class="text-sm text-gray-500">Following</span>
+          </div>
         </div>
       </div>
     </div>
 
     <button
+      v-if="isOwnProfile"
       @click="$emit('sign-out')"
       class="w-full md:w-auto px-6 py-2 border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-red-500 transition-colors cursor-pointer"
     >
       Sign Out
+    </button>
+    <button
+      v-else
+      @click="$emit('toggle-follow')"
+      class="w-full md:w-auto px-6 py-2 rounded-xl font-medium transition-colors cursor-pointer"
+      :class="
+        isFollowing
+          ? 'border border-gray-200 text-gray-900 hover:bg-red-50 hover:text-red-600 hover:border-red-200'
+          : 'bg-gray-900 text-white hover:bg-gray-800'
+      "
+    >
+      {{ isFollowing ? "Following" : "Follow" }}
     </button>
   </div>
 </template>
@@ -98,12 +102,13 @@ import { useAuth } from "@/composables/useAuth";
 const props = defineProps<{
   user: User | null;
   profile: Profile | null;
+  isOwnProfile?: boolean;
+  isFollowing?: boolean;
 }>();
 
 defineEmits<{
   (e: "sign-out"): void;
-  (e: "show-followers"): void;
-  (e: "show-following"): void;
+  (e: "toggle-follow"): void;
 }>();
 
 const { updateAvatar } = useAuth();

@@ -187,6 +187,30 @@ export const socialService = {
     return data;
   },
 
+  async getProfile(userId: string) {
+    const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single();
+
+    if (error) throw error;
+
+    const { data: session } = await supabase.auth.getSession();
+    const currentUserId = session.session?.user?.id;
+
+    if (currentUserId && currentUserId !== userId) {
+      const { count } = await supabase
+        .from("follows")
+        .select("*", { count: "exact", head: true })
+        .eq("follower_id", currentUserId)
+        .eq("following_id", userId);
+
+      return {
+        ...data,
+        is_following: count !== null && count > 0,
+      };
+    }
+
+    return data;
+  },
+
   async followUser(targetUserId: string) {
     const { data: user } = await supabase.auth.getUser();
     if (!user.user) throw new Error("Not authenticated");
