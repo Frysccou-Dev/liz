@@ -80,7 +80,7 @@ class UserListService {
 
   async addToList(
     listId: number,
-    media: { id: number; type: "ANIME" | "MANGA"; title: string; cover: string }
+    media: { id: number; type: "ANIME" | "MANGA"; title: string; cover: string },
   ) {
     const { error } = await supabase.from("list_items").insert({
       list_id: listId,
@@ -106,7 +106,7 @@ class UserListService {
     status: string,
     score?: number,
     title?: string,
-    cover?: string
+    cover?: string,
   ) {
     const table = type === "ANIME" ? "user_anime_status" : "user_manga_status";
     const idField = type === "ANIME" ? "anime_id" : "manga_id";
@@ -154,13 +154,19 @@ class UserListService {
     const table = type === "ANIME" ? "user_anime_status" : "user_manga_status";
     const idField = type === "ANIME" ? "anime_id" : "manga_id";
 
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return null;
+
     const { data, error } = await supabase
       .from(table)
       .select("status, score")
+      .eq("user_id", user.id)
       .eq(idField, mediaId)
-      .single();
+      .maybeSingle();
 
-    if (error && error.code !== "PGRST116") throw error;
+    if (error) throw error;
     return data as { status: string; score: number } | null;
   }
 }

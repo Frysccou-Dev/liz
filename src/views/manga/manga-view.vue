@@ -1,82 +1,140 @@
 <template>
   <Loader ref="loaderRef" />
-  <div class="w-full min-h-screen">
-    <main class="w-full py-8">
-      <PageTitle title="Mangas" />
-      <MangaFilter @search="handleSearch" />
+  <div class="min-h-screen bg-white">
+    <section class="pt-16 pb-12 px-6">
+      <div class="max-w-7xl mx-auto text-center">
+        <span class="text-xs uppercase tracking-[0.3em] text-gray-400 mb-4 block">Explore</span>
+        <h1 class="text-5xl md:text-6xl lg:text-7xl font-light text-gray-200 tracking-tight mb-6">
+          Mangas
+        </h1>
+        <p class="text-gray-500 font-light max-w-lg mx-auto">
+          Explore our extensive manga collection and track your reading journey
+        </p>
+      </div>
+    </section>
 
-      <div v-if="isSearching" class="w-full px-4 md:px-12 animate-fade-in">
-        <div class="w-[min(1100px,100%)] mx-auto">
-          <div class="flex justify-between items-center mb-8">
-            <h2 class="text-2xl font-light text-gray-900 tracking-wide">Search Results</h2>
-            <button
-              @click="clearSearch"
-              class="text-sm text-gray-500 hover:text-gray-900 transition-colors"
-            >
-              Clear filters
-            </button>
+    <section class="pb-8 px-6">
+      <div class="max-w-5xl mx-auto">
+        <MangaFilter @search="handleSearch" />
+      </div>
+    </section>
+
+    <div v-if="isSearching" class="px-6 pb-24 animate-fade-in">
+      <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-center mb-12 pt-8 border-t border-gray-100">
+          <div>
+            <span class="text-xs uppercase tracking-[0.2em] text-gray-400 block mb-2">Results</span>
+            <h2 class="text-2xl font-light text-gray-900">Search Results</h2>
           </div>
-
-          <div
-            v-if="searchResults.length > 0"
-            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 justify-items-center"
+          <button
+            @click="clearSearch"
+            class="px-4 py-2 text-sm text-gray-500 hover:text-gray-900 border border-gray-200 rounded-lg hover:border-gray-400 transition-all"
           >
-            <MangaCard
-              v-for="manga in searchResults"
-              :key="manga.id"
-              :manga="manga"
-              class="w-full"
-            />
-          </div>
+            Clear filters
+          </button>
+        </div>
 
-          <div v-else class="flex flex-col items-center justify-center py-20 text-gray-500">
-            <p class="text-lg font-light">No results found</p>
-            <p class="text-sm mt-2">Try adjusting the filters</p>
-          </div>
+        <div
+          v-if="searchResults.length > 0"
+          class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6"
+        >
+          <MangaCard v-for="manga in searchResults" :key="manga.id" :manga="manga" class="w-full" />
+        </div>
 
-          <div v-if="searchResults.length > 0" class="flex justify-center gap-4 mt-12">
-            <button
-              @click="changePage(currentPage - 1)"
-              :disabled="currentPage === 1"
-              class="px-6 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-            >
-              Previous
-            </button>
-            <span class="flex items-center text-gray-600 font-light"> Page {{ currentPage }} </span>
-            <button
-              @click="changePage(currentPage + 1)"
-              :disabled="!hasNextPage"
-              class="px-6 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-            >
-              Next
-            </button>
+        <div v-else class="flex flex-col items-center justify-center py-24 text-center">
+          <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-6">
+            <SearchIcon class="w-6 h-6 text-gray-400" />
           </div>
+          <p class="text-xl font-light text-gray-900 mb-2">No results found</p>
+          <p class="text-gray-500 font-light">Try adjusting your search filters</p>
+        </div>
+
+        <div v-if="searchResults.length > 0" class="flex justify-center items-center gap-4 mt-16">
+          <button
+            @click="changePage(currentPage - 1)"
+            :disabled="currentPage === 1"
+            class="px-6 py-3 rounded-lg border border-gray-200 bg-white text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed hover:border-gray-400 transition-all"
+          >
+            Previous
+          </button>
+          <span class="px-4 py-2 text-gray-500 font-light">Page {{ currentPage }}</span>
+          <button
+            @click="changePage(currentPage + 1)"
+            :disabled="!hasNextPage"
+            class="px-6 py-3 rounded-lg border border-gray-200 bg-white text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed hover:border-gray-400 transition-all"
+          >
+            Next
+          </button>
         </div>
       </div>
+    </div>
 
-      <div v-else class="sections-container animate-fade-in">
-        <PopularMangaList @loaded="onComponentLoaded" />
-        <TrendingMangaList @loaded="onComponentLoaded" />
-        <TopRatedMangaList @loaded="onComponentLoaded" />
-      </div>
-    </main>
+    <div v-else class="pb-24 animate-fade-in">
+      <section class="py-16 px-6">
+        <div class="max-w-7xl mx-auto">
+          <div class="mb-12">
+            <span class="text-xs uppercase tracking-[0.2em] text-gray-400 block mb-2"
+              >Trending</span
+            >
+            <h2 class="text-2xl font-light text-gray-900">Popular Manga</h2>
+          </div>
+          <div
+            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6"
+          >
+            <MangaCard v-for="manga in popularMangas" :key="manga.id" :manga="manga" />
+          </div>
+        </div>
+      </section>
+
+      <section class="py-16 px-6 bg-gray-50">
+        <div class="max-w-7xl mx-auto">
+          <div class="mb-12">
+            <span class="text-xs uppercase tracking-[0.2em] text-gray-400 block mb-2"
+              >Hot Right Now</span
+            >
+            <h2 class="text-2xl font-light text-gray-900">Trending Manga</h2>
+          </div>
+          <div
+            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6"
+          >
+            <MangaCard v-for="manga in trendingMangas" :key="manga.id" :manga="manga" />
+          </div>
+        </div>
+      </section>
+
+      <section class="py-16 px-6">
+        <div class="max-w-7xl mx-auto">
+          <div class="mb-12">
+            <span class="text-xs uppercase tracking-[0.2em] text-gray-400 block mb-2"
+              >Best of All Time</span
+            >
+            <h2 class="text-2xl font-light text-gray-900">Top Rated Manga</h2>
+          </div>
+          <div
+            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6"
+          >
+            <MangaCard v-for="manga in topRatedMangas" :key="manga.id" :manga="manga" />
+          </div>
+        </div>
+      </section>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
+import { Search as SearchIcon } from "lucide-vue-next";
 import Loader from "@/components/layout/loader.vue";
-import PageTitle from "@/components/ui/page-title.vue";
 import MangaFilter from "@/components/features/manga-filter.vue";
 import MangaCard from "@/components/ui/manga-card.vue";
-import PopularMangaList from "./components/popular-manga-list.vue";
-import TrendingMangaList from "./components/trending-manga-list.vue";
-import TopRatedMangaList from "./components/top-rated-manga-list.vue";
 import { aniListMangaService, type Manga, type SearchFilters } from "@/services/anilist-manga";
 
 const loaderRef = ref<InstanceType<typeof Loader>>();
-let loadedComponents = 0;
-const totalComponents = 3;
+let safetyTimeout: ReturnType<typeof setTimeout> | null = null;
+
+const popularMangas = ref<Manga[]>([]);
+const trendingMangas = ref<Manga[]>([]);
+const topRatedMangas = ref<Manga[]>([]);
 
 const isSearching = ref(false);
 const searchResults = ref<Manga[]>([]);
@@ -84,10 +142,33 @@ const currentPage = ref(1);
 const hasNextPage = ref(false);
 const currentFilters = ref<SearchFilters>({});
 
-const onComponentLoaded = () => {
-  loadedComponents++;
-  if (loadedComponents === totalComponents && loaderRef.value) {
+const hideLoaderSafely = () => {
+  if (safetyTimeout) {
+    clearTimeout(safetyTimeout);
+    safetyTimeout = null;
+  }
+  if (loaderRef.value) {
     loaderRef.value.hideLoader();
+  }
+};
+
+const fetchAllData = async () => {
+  if (loaderRef.value) loaderRef.value.showLoader();
+
+  try {
+    const [popular, trending, topRated] = await Promise.all([
+      aniListMangaService.getPopularManga(1, 6),
+      aniListMangaService.getTrendingManga(1, 6),
+      aniListMangaService.getTopRatedManga(1, 6),
+    ]);
+
+    popularMangas.value = popular;
+    trendingMangas.value = trending;
+    topRatedMangas.value = topRated;
+  } catch (error) {
+    console.error(error);
+  } finally {
+    hideLoaderSafely();
   }
 };
 
@@ -114,10 +195,10 @@ const fetchResults = async () => {
     const results = await aniListMangaService.searchAdvanced(
       currentFilters.value,
       currentPage.value,
-      15
+      18,
     );
     searchResults.value = results;
-    hasNextPage.value = results.length === 15;
+    hasNextPage.value = results.length === 18;
   } catch (error) {
     console.error(error);
     searchResults.value = [];
@@ -140,29 +221,15 @@ const clearSearch = () => {
 };
 
 onMounted(() => {
-  if (loaderRef.value) loaderRef.value.showLoader();
+  safetyTimeout = setTimeout(() => {
+    hideLoaderSafely();
+  }, 10000);
+  fetchAllData();
+});
+
+onUnmounted(() => {
+  if (safetyTimeout) {
+    clearTimeout(safetyTimeout);
+  }
 });
 </script>
-
-<style scoped>
-.sections-container {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-</style>

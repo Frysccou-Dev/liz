@@ -1,45 +1,127 @@
 <template>
-  <div class="min-h-screen py-12 px-4">
-    <div class="max-w-5xl mx-auto space-y-8">
-      <div v-if="loadingProfile" class="flex justify-center py-12">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-      </div>
-
-      <template v-else-if="displayProfile">
-        <ProfileHeader
-          :user="null"
-          :profile="displayProfile"
-          :is-own-profile="false"
-          :is-following="isFollowing"
-          @toggle-follow="handleToggleFollow"
-        />
-
-        <ProfileTabs v-model:activeTab="activeTab" :tabs="tabs" />
-
-        <ProfilePosts
-          v-if="activeTab === 'posts'"
-          :posts="userPosts"
-          :loading="loadingPosts"
-          :has-more="hasMorePosts"
-          @update:post="updatePost"
-          @open-post="selectedPost = $event"
-        />
-
-        <div
-          v-else-if="activeTab === 'overview'"
-          class="p-8 text-center text-gray-500 bg-white rounded-2xl shadow-sm"
-        >
-          <p>User lists are private.</p>
-        </div>
-
-        <div
-          v-else-if="activeTab === 'anime' || activeTab === 'manga'"
-          class="p-8 text-center text-gray-500 bg-white rounded-2xl shadow-sm"
-        >
-          <p>Media lists are private.</p>
-        </div>
-      </template>
+  <div class="min-h-screen bg-white">
+    <div v-if="loadingProfile" class="flex justify-center items-center py-32">
+      <div
+        class="w-8 h-8 border-2 border-gray-200 border-t-gray-900 rounded-full animate-spin"
+      ></div>
     </div>
+
+    <template v-else-if="displayProfile">
+      <section class="pt-16 pb-8 px-6">
+        <div class="max-w-4xl mx-auto">
+          <div class="flex flex-col md:flex-row items-center md:items-start gap-8">
+            <div
+              class="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gray-100 flex items-center justify-center text-3xl font-light text-gray-400 overflow-hidden"
+            >
+              <img
+                v-if="displayProfile.avatar_url"
+                :src="displayProfile.avatar_url"
+                alt="Avatar"
+                class="w-full h-full object-cover"
+              />
+              <span v-else>{{ displayProfile.username?.charAt(0).toUpperCase() }}</span>
+            </div>
+
+            <div class="flex-1 text-center md:text-left">
+              <h2 class="text-2xl md:text-3xl font-medium text-gray-900 mb-1">
+                {{ displayProfile.username }}
+              </h2>
+              <p class="text-gray-500 font-light mb-4">@{{ displayProfile.username }}</p>
+
+              <div class="flex justify-center md:justify-start gap-6">
+                <div class="text-center">
+                  <div class="text-xl font-medium text-gray-900">
+                    {{ displayProfile.followers_count || 0 }}
+                  </div>
+                  <div class="text-xs uppercase tracking-wider text-gray-400">Followers</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-xl font-medium text-gray-900">
+                    {{ displayProfile.following_count || 0 }}
+                  </div>
+                  <div class="text-xs uppercase tracking-wider text-gray-400">Following</div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              @click="handleToggleFollow"
+              class="px-6 py-3 rounded-xl font-medium transition-all"
+              :class="
+                isFollowing
+                  ? 'border border-gray-200 text-gray-700 hover:border-red-300 hover:text-red-500'
+                  : 'bg-gray-900 text-white hover:bg-gray-800'
+              "
+            >
+              {{ isFollowing ? "Following" : "Follow" }}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="px-6 mb-8">
+        <div class="max-w-4xl mx-auto">
+          <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            <button
+              v-for="tab in tabs"
+              :key="tab.id"
+              @click="activeTab = tab.id"
+              class="px-5 py-3 rounded-xl text-sm font-medium transition-all whitespace-nowrap"
+              :class="
+                activeTab === tab.id
+                  ? 'bg-gray-900 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              "
+            >
+              {{ tab.label }}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="px-6 pb-24">
+        <div class="max-w-4xl mx-auto">
+          <div v-if="activeTab === 'posts'">
+            <div v-if="loadingPosts && userPosts.length === 0" class="py-20 text-center">
+              <div
+                class="w-8 h-8 border-2 border-gray-200 border-t-gray-900 rounded-full animate-spin mx-auto"
+              ></div>
+            </div>
+
+            <div v-else-if="userPosts.length === 0" class="py-20 text-center">
+              <div
+                class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4"
+              >
+                <MessageSquareIcon class="w-6 h-6 text-gray-400" />
+              </div>
+              <p class="text-gray-900 font-medium mb-2">No posts yet</p>
+              <p class="text-sm text-gray-500">This user hasn't posted anything</p>
+            </div>
+
+            <div v-else class="space-y-4">
+              <PostCard
+                v-for="post in userPosts"
+                :key="post.id"
+                :post="post"
+                class="bg-white border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors"
+                @update:post="updatePost"
+                @click="selectedPost = post"
+              />
+            </div>
+          </div>
+
+          <div v-else class="py-20 text-center">
+            <div
+              class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4"
+            >
+              <LockIcon class="w-6 h-6 text-gray-400" />
+            </div>
+            <p class="text-gray-900 font-medium mb-2">Private</p>
+            <p class="text-sm text-gray-500">This content is only visible to the profile owner</p>
+          </div>
+        </div>
+      </section>
+    </template>
 
     <PostDetailModal
       v-if="selectedPost"
@@ -57,12 +139,10 @@ import { ref, onMounted, onUnmounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuth } from "@/composables/useAuth";
 import { socialService, type Post, type Profile } from "@/services/social";
-import Loader from "@/components/layout/loader.vue";
-
-import ProfileHeader from "./components/profile-header.vue";
-import ProfileTabs from "./components/profile-tabs.vue";
-import ProfilePosts from "./components/profile-posts.vue";
+import { MessageSquare as MessageSquareIcon, Lock as LockIcon } from "lucide-vue-next";
+import PostCard from "@/views/social/components/post-card.vue";
 import PostDetailModal from "@/views/social/components/post-detail-modal.vue";
+import Loader from "@/components/layout/loader.vue";
 
 const { user: currentUser } = useAuth();
 const router = useRouter();
@@ -76,9 +156,9 @@ const loadingProfile = ref(true);
 const activeTab = ref("posts");
 const tabs = [
   { id: "posts", label: "Posts" },
-  { id: "overview", label: "Overview" },
-  { id: "anime", label: "Anime List" },
-  { id: "manga", label: "Manga List" },
+  { id: "lists", label: "Lists" },
+  { id: "anime", label: "Anime" },
+  { id: "manga", label: "Manga" },
 ];
 
 const userPosts = ref<Post[]>([]);
@@ -138,9 +218,7 @@ const loadProfileData = async (userId: string) => {
     const profileData = await socialService.getProfile(userId);
     displayProfile.value = profileData;
     isFollowing.value = profileData.is_following || false;
-
     userPosts.value = [];
-
     fetchUserPosts(true);
   } catch (e) {
     console.error(e);
@@ -183,28 +261,10 @@ watch(
     if (newId) {
       await loadProfileData(newId as string);
     }
-  }
+  },
 );
 
 onUnmounted(() => {
   window.removeEventListener("scroll", handlePostsScroll);
 });
 </script>
-
-<style scoped>
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-out forwards;
-  opacity: 0;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-</style>

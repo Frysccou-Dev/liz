@@ -46,7 +46,7 @@
           <div
             v-for="(img, idx) in post.images"
             :key="idx"
-            class="rounded-xl overflow-hidden bg-gray-100 shadow-sm flex justify-center items-center bg-black/5 aspect-4/5 cursor-pointer hover:opacity-95 transition-opacity"
+            class="rounded-xl overflow-hidden bg-gray-100 shadow-sm flex justify-center items-center aspect-4/5 cursor-pointer hover:opacity-95 transition-opacity"
             :class="{
               'col-span-2': post.images.length === 1 || (post.images.length === 3 && idx === 0),
             }"
@@ -179,17 +179,6 @@ const updateCommentsCount = (count: number) => {
 <style scoped>
 .animate-scale-in {
   animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
 }
 
 .custom-scrollbar::-webkit-scrollbar {

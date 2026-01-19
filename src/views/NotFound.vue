@@ -1,6 +1,6 @@
 <template>
   <section
-    class="relative flex flex-col items-center justify-center min-h-screen overflow-hidden  text-[#1a1a1a] font-mono selection:bg-black selection:text-white"
+    class="relative flex flex-col items-center justify-center min-h-screen overflow-hidden text-[#1a1a1a] font-mono selection:bg-black selection:text-white"
   >
     <div class="absolute inset-0 w-full h-full pointer-events-none">
       <div class="absolute top-0 left-1/4 w-px h-full bg-gray-200"></div>
@@ -76,18 +76,7 @@
 <script setup lang="ts"></script>
 
 <style scoped>
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .animate-fade-in-up {
-  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 </style>

@@ -1,27 +1,26 @@
 <template>
-  <div class="min-h-screen bg-white pb-20 md:pb-0">
-    <div class="max-w-7xl mx-auto flex justify-center">
-      <div class="w-full max-w-2xl border-x border-gray-100 min-h-screen">
-        <div
-          class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-100 p-4 flex justify-between items-center"
-        >
-          <h2 class="text-xl font-bold text-gray-400">Community</h2>
-          <button
-            @click="showCreateModal = true"
-            class="md:hidden p-2 bg-gray-900 text-white rounded-full"
-          >
-            <PlusIcon class="w-5 h-5" />
-          </button>
-        </div>
+  <div class="min-h-screen bg-white">
+    <section class="pt-16 pb-8 px-6">
+      <div class="max-w-4xl mx-auto text-center">
+        <span class="text-xs uppercase tracking-[0.3em] text-gray-400 mb-4 block">Connect</span>
+        <h1 class="text-5xl md:text-6xl font-light text-gray-200 tracking-tight mb-4">Community</h1>
+        <p class="text-gray-500 font-light max-w-md mx-auto">
+          Share your thoughts and connect with other anime fans
+        </p>
+      </div>
+    </section>
 
+    <section class="pb-24 px-6">
+      <div class="max-w-2xl mx-auto">
         <div
-          class="hidden md:block p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors"
+          v-if="profile"
+          class="mb-8 p-6 bg-gray-50 rounded-2xl cursor-pointer hover:bg-gray-100 transition-colors"
           @click="showCreateModal = true"
         >
-          <div class="flex gap-3">
-            <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+          <div class="flex gap-4 items-center">
+            <div class="w-12 h-12 rounded-full bg-gray-200 overflow-hidden shrink-0">
               <img
-                v-if="profile?.avatar_url"
+                v-if="profile.avatar_url"
                 :src="profile.avatar_url"
                 class="w-full h-full object-cover"
               />
@@ -29,99 +28,109 @@
                 v-else
                 class="w-full h-full flex items-center justify-center text-gray-500 font-medium"
               >
-                {{ profile?.username?.charAt(0).toUpperCase() }}
+                {{ profile.username?.charAt(0).toUpperCase() }}
               </div>
             </div>
             <div class="flex-1">
-              <div class="w-full bg-gray-100 rounded-full py-2.5 px-4 text-gray-500 text-sm">
-                What's happening?
+              <div class="text-gray-400 font-light">What's on your mind?</div>
+            </div>
+            <PlusIcon class="w-5 h-5 text-gray-400" />
+          </div>
+        </div>
+
+        <div class="mb-8">
+          <div class="relative">
+            <SearchIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search profiles..."
+              class="w-full bg-gray-50 border-none rounded-xl py-4 pl-12 pr-4 text-sm focus:ring-2 focus:ring-gray-200 focus:bg-white transition-all"
+              @input="handleSearch"
+            />
+          </div>
+
+          <div
+            v-if="searchResults.length > 0"
+            class="mt-4 bg-white rounded-xl border border-gray-100 overflow-hidden"
+          >
+            <div
+              v-for="user in searchResults"
+              :key="user.id"
+              class="p-4 hover:bg-gray-50 flex items-center justify-between cursor-pointer border-b border-gray-50 last:border-b-0"
+              @click="goToProfile(user)"
+            >
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                  <img
+                    v-if="user.avatar_url"
+                    :src="user.avatar_url"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900">{{ user.username }}</p>
+                  <p class="text-xs text-gray-500">{{ user.followers_count }} followers</p>
+                </div>
               </div>
+              <button
+                @click.stop="toggleFollow(user)"
+                class="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                :class="
+                  user.is_following
+                    ? 'border border-gray-200 text-gray-700 hover:border-gray-400'
+                    : 'bg-gray-900 text-white hover:bg-gray-800'
+                "
+              >
+                {{ user.is_following ? "Following" : "Follow" }}
+              </button>
             </div>
           </div>
         </div>
 
-        <div class="divide-y divide-gray-100">
-          <div v-if="loading" class="p-8 text-center text-gray-400">Loading...</div>
-          <div v-else-if="error" class="p-8 text-center text-red-500 bg-red-50 m-4 rounded-lg">
-            <p class="font-medium">Error loading posts</p>
-            <p class="text-sm mt-1">{{ error }}</p>
+        <div class="space-y-1">
+          <div v-if="loading" class="py-20 text-center">
+            <div
+              class="w-8 h-8 border-2 border-gray-200 border-t-gray-900 rounded-full animate-spin mx-auto"
+            ></div>
+            <p class="text-gray-400 mt-4 font-light">Loading posts...</p>
+          </div>
+
+          <div v-else-if="error" class="py-20 text-center">
+            <p class="text-gray-900 font-medium mb-2">Error loading posts</p>
+            <p class="text-sm text-gray-500 mb-4">{{ error }}</p>
             <button
               @click="fetchPosts(true)"
-              class="mt-3 text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline"
+              class="text-sm text-gray-900 underline hover:no-underline"
             >
               Try Again
             </button>
           </div>
-          <div v-else-if="posts.length === 0" class="p-8 text-center text-gray-400">
-            No posts yet. Be the first!
-          </div>
-          <PostCard
-            v-for="(post, index) in posts"
-            :key="post.id"
-            :post="post"
-            class="border-none rounded-none hover:bg-gray-50/50 cursor-pointer"
-            :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'"
-            @update:post="updatePost"
-            @click="selectedPost = post"
-            @show-comments="selectedPost = post"
-          />
-        </div>
-      </div>
 
-      <div class="hidden lg:block w-80 pl-8 pt-4">
-        <div class="sticky top-4 space-y-6">
-          <div class="relative group">
-            <SearchIcon
-              class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-gray-900"
-            />
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search profiles"
-              class="w-full bg-gray-100 border-none rounded-full py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all"
-              @input="handleSearch"
-            />
-
+          <div v-else-if="posts.length === 0" class="py-20 text-center">
             <div
-              v-if="searchResults.length > 0"
-              class="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-20"
+              class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4"
             >
-              <div
-                v-for="user in searchResults"
-                :key="user.id"
-                class="p-3 hover:bg-gray-50 flex items-center justify-between cursor-pointer"
-                @click="goToProfile(user)"
-              >
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-full bg-gray-200 overflow-hidden">
-                    <img
-                      v-if="user.avatar_url"
-                      :src="user.avatar_url"
-                      class="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <p class="font-bold text-sm text-gray-900">{{ user.username }}</p>
-                    <p class="text-xs text-gray-500">{{ user.followers_count }} followers</p>
-                  </div>
-                </div>
-                <button
-                  @click.stop="toggleFollow(user)"
-                  class="px-3 py-1 rounded-full text-xs font-medium transition-colors"
-                  :class="
-                    user.is_following
-                      ? 'border border-gray-200 text-gray-900 hover:bg-red-50 hover:text-red-600 hover:border-red-200'
-                      : 'bg-gray-900 text-white hover:bg-gray-800'
-                  "
-                >
-                  {{ user.is_following ? "Following" : "Follow" }}
-                </button>
-              </div>
+              <MessageSquareIcon class="w-6 h-6 text-gray-400" />
             </div>
+            <p class="text-gray-900 font-medium mb-2">No posts yet</p>
+            <p class="text-sm text-gray-500">Be the first to share something!</p>
+          </div>
+
+          <div v-else>
+            <PostCard
+              v-for="post in posts"
+              :key="post.id"
+              :post="post"
+              class="bg-white hover:bg-gray-50 transition-colors rounded-xl mb-4 border border-gray-100"
+              @update:post="updatePost"
+              @click="selectedPost = post"
+              @show-comments="selectedPost = post"
+            />
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
     <CreatePostModal
       v-if="showCreateModal"
@@ -137,80 +146,9 @@
     />
 
     <button
-      @click="showSearchModal = true"
-      class="lg:hidden fixed right-4 w-14 h-14 bg-white text-gray-900 border border-gray-200 rounded-full shadow-lg flex items-center justify-center z-40 bottom-36 md:bottom-20"
-    >
-      <SearchIcon class="w-6 h-6" />
-    </button>
-
-    <div
-      v-if="showSearchModal"
-      class="fixed inset-0 z-50 bg-white/80 backdrop-blur-sm flex items-start justify-center pt-20 px-4"
-    >
-      <div class="absolute inset-0" @click="showSearchModal = false"></div>
-      <div
-        class="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-gray-100 p-4 relative z-10"
-      >
-        <div class="relative">
-          <SearchIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Search profiles"
-            class="w-full bg-gray-100 border-none rounded-full py-3 pl-10 pr-10 text-sm focus:ring-2 focus:ring-gray-900"
-            @input="handleSearch"
-            autofocus
-          />
-          <button
-            @click="showSearchModal = false"
-            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-          >
-            <XIcon class="w-4 h-4" />
-          </button>
-        </div>
-
-        <div
-          v-if="searchResults.length > 0"
-          class="mt-4 max-h-[60vh] overflow-y-auto divide-y divide-gray-100"
-        >
-          <div
-            v-for="user in searchResults"
-            :key="user.id"
-            class="p-3 hover:bg-gray-50 flex items-center justify-between cursor-pointer"
-            @click="goToProfile(user)"
-          >
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-full bg-gray-200 overflow-hidden">
-                <img
-                  v-if="user.avatar_url"
-                  :src="user.avatar_url"
-                  class="w-full h-full object-cover"
-                />
-              </div>
-              <div>
-                <p class="font-bold text-sm text-gray-900">{{ user.username }}</p>
-                <p class="text-xs text-gray-500">{{ user.followers_count }} followers</p>
-              </div>
-            </div>
-            <button
-              @click.stop="toggleFollow(user)"
-              class="px-3 py-1 rounded-full text-xs font-medium transition-colors"
-              :class="
-                user.is_following
-                  ? 'border border-gray-200 text-gray-900 hover:bg-red-50 hover:text-red-600 hover:border-red-200'
-                  : 'bg-gray-900 text-white hover:bg-gray-800'
-              "
-            >
-              {{ user.is_following ? "Following" : "Follow" }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <button
+      v-if="profile"
       @click="showCreateModal = true"
-      class="md:hidden fixed bottom-20 right-4 w-14 h-14 bg-gray-900 text-white rounded-full shadow-lg flex items-center justify-center z-40"
+      class="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-gray-900 text-white rounded-full shadow-lg flex items-center justify-center z-40 hover:bg-gray-800 transition-colors"
     >
       <PlusIcon class="w-6 h-6" />
     </button>
@@ -221,7 +159,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
-import { Search as SearchIcon, Plus as PlusIcon, X as XIcon } from "lucide-vue-next";
+import {
+  Search as SearchIcon,
+  Plus as PlusIcon,
+  MessageSquare as MessageSquareIcon,
+} from "lucide-vue-next";
 import { useRouter } from "vue-router";
 import { useAuth } from "@/composables/useAuth";
 import { socialService, type Post, type Profile } from "@/services/social";
@@ -237,7 +179,6 @@ const posts = ref<Post[]>([]);
 const loading = ref(false);
 const error = ref<string | null>(null);
 const showCreateModal = ref(false);
-const showSearchModal = ref(false);
 const selectedPost = ref<Post | null>(null);
 const searchQuery = ref("");
 const searchResults = ref<Profile[]>([]);
@@ -264,11 +205,7 @@ const fetchPosts = async (reset = false) => {
     posts.value.push(...newPosts);
     page.value++;
   } catch (e: unknown) {
-    console.error("Failed to fetch posts:", e);
-    const message =
-      e instanceof Error
-        ? e.message
-        : "Failed to load posts. Please check your connection and configuration.";
+    const message = e instanceof Error ? e.message : "Failed to load posts.";
     error.value = message;
   } finally {
     loading.value = false;
@@ -322,7 +259,6 @@ const toggleFollow = async (user: Profile) => {
 
 const goToProfile = (user: Profile) => {
   router.push({ name: "UserProfile", params: { userId: user.id } });
-  showSearchModal.value = false;
   searchQuery.value = "";
   searchResults.value = [];
 };
