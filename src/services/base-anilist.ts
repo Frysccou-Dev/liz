@@ -129,7 +129,7 @@ export abstract class BaseAniListService {
     const nextIndex = (currentIndex + 1) % 4;
     const nextYear = nextIndex === 0 ? current.year + 1 : current.year;
 
-    return { season: seasons[nextIndex], year: nextYear };
+    return { season: seasons[nextIndex]!, year: nextYear };
   }
 
   protected buildMediaQuery(
