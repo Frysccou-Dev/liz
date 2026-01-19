@@ -262,7 +262,7 @@ const handleOption = async (option: Option) => {
       addMessage("Ooh, exciting! 🖤 Do you prefer Anime or Manga today? 🌸");
     } else if (step.value === "GENRE_SELECT") {
       addMessage(
-        `Nice choice! What kind of ${preferences.value.type.toLowerCase()} are you in the mood for?`
+        `Nice choice! What kind of ${preferences.value.type.toLowerCase()} are you in the mood for?`,
       );
     } else if (step.value === "DETAILS") {
       addMessage("Tell me a bit more about what you like! 🖤 (max 250 chars)");
@@ -299,7 +299,7 @@ const fetchRecommendation = async () => {
           status: "FINISHED",
         },
         1,
-        5
+        5,
       );
 
       if (results.length === 0) {
@@ -309,7 +309,7 @@ const fetchRecommendation = async () => {
             status: "FINISHED",
           },
           1,
-          20
+          20,
         );
         if (results.length > 0) {
           results = results.sort(() => 0.5 - Math.random());
@@ -330,7 +330,7 @@ const fetchRecommendation = async () => {
           status: "FINISHED",
         },
         1,
-        5
+        5,
       );
 
       if (results.length === 0) {
@@ -340,7 +340,7 @@ const fetchRecommendation = async () => {
             status: "FINISHED",
           },
           1,
-          20
+          20,
         );
         if (results.length > 0) {
           results = results.sort(() => 0.5 - Math.random());
@@ -362,7 +362,7 @@ const fetchRecommendation = async () => {
         `Trust me on this, it's a hidden gem that matches your taste! 🖤`,
         `Since you mentioned "${preferences.value.details.substring(
           0,
-          10
+          10,
         )}...", this came to mind immediately! 🌸`,
       ];
       const reason = reasons[Math.floor(Math.random() * reasons.length)];
@@ -392,16 +392,5 @@ const fetchRecommendation = async () => {
 <style scoped>
 .animate-slide-up {
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
 }
 </style>

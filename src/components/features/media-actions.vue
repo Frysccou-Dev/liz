@@ -133,7 +133,7 @@ const mangaStatusOptions = [
 ];
 
 const statusOptions = computed(() =>
-  props.mediaType === "ANIME" ? animeStatusOptions : mangaStatusOptions
+  props.mediaType === "ANIME" ? animeStatusOptions : mangaStatusOptions,
 );
 
 const currentStatusLabel = computed(() => {
@@ -162,7 +162,7 @@ const updateStatus = async (status: string | null) => {
         status,
         undefined,
         props.mediaTitle,
-        props.mediaCover
+        props.mediaCover,
       );
     }
     currentStatus.value = status;
@@ -192,7 +192,7 @@ const fetchListsAndStatus = async () => {
     for (const list of lists.value) {
       const items = await userListService.getListItems(list.id);
       checks[list.id] = items.some(
-        (item) => item.media_id === props.mediaId && item.media_type === props.mediaType
+        (item) => item.media_id === props.mediaId && item.media_type === props.mediaType,
       );
     }
     listItems.value = checks;
@@ -247,7 +247,7 @@ watch(
         console.error(error);
       }
     }
-  }
+  },
 );
 
 onMounted(async () => {
@@ -274,16 +274,5 @@ onUnmounted(() => {
 .animate-scale-in {
   animation: scaleIn 0.2s ease-out;
   transform-origin: top left;
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
 }
 </style>

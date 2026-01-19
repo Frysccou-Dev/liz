@@ -15,7 +15,7 @@
             <div class="prose prose-gray max-w-none">
               <h3 class="text-xl font-medium text-gray-900 mb-4">Synopsis</h3>
               <div
-                v-html="manga.description"
+                v-html="sanitizedDescription"
                 class="text-gray-600 font-light leading-relaxed"
               ></div>
             </div>
@@ -64,9 +64,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import { useRoute } from "vue-router";
 import { aniListMangaService, type Manga } from "@/services/anilist-manga";
+import { sanitizeHtml } from "@/utils/sanitize";
 import Loader from "@/components/layout/loader.vue";
 import MangaHeader from "./components/manga-header.vue";
 import MangaInfo from "./components/manga-info.vue";
@@ -76,6 +77,8 @@ import MangaRelations from "./components/manga-relations.vue";
 const route = useRoute();
 const loaderRef = ref<InstanceType<typeof Loader>>();
 const manga = ref<Manga | null>(null);
+
+const sanitizedDescription = computed(() => sanitizeHtml(manga.value?.description));
 
 const fetchManga = async (id: number) => {
   if (loaderRef.value) loaderRef.value.showLoader();
@@ -98,21 +101,6 @@ watch(
   () => route.params.id,
   (newId) => {
     if (newId) fetchManga(Number(newId));
-  }
+  },
 );
 </script>
-
-<style scoped>
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-</style>

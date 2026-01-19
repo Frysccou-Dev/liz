@@ -1,10 +1,4 @@
-import axios from "axios";
-import type { AxiosInstance } from "axios";
-
-interface AniListError {
-  message: string;
-  status?: number;
-}
+import { BaseAniListService, type AniListError } from "./base-anilist";
 
 interface Manga {
   id: number;
@@ -78,11 +72,6 @@ interface AniListMangaResponse {
   };
 }
 
-interface CacheEntry<T> {
-  data: T;
-  timestamp: number;
-}
-
 interface SearchFilters {
   search?: string;
   genre?: string[];
@@ -91,57 +80,8 @@ interface SearchFilters {
   status?: string;
 }
 
-class AniListMangaService {
-  private client: AxiosInstance;
-  private baseURL = import.meta.env.DEV ? "/api" : "https://graphql.anilist.co";
-  private readonly CACHE_DURATION = 30 * 60 * 1000;
-  private readonly STORAGE_PREFIX = "anilist_manga_cache_v1_";
-
-  constructor() {
-    this.client = axios.create({
-      baseURL: this.baseURL,
-      timeout: 10000,
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-  }
-
-  private generateCacheKey(method: string, page: number, perPage: number, search?: string): string {
-    return `${method}:${page}:${perPage}${search ? `:${search}` : ""}`;
-  }
-
-  private isCacheValid(timestamp: number): boolean {
-    return Date.now() - timestamp < this.CACHE_DURATION;
-  }
-
-  private getCachedData<T>(key: string): T | null {
-    try {
-      const storageKey = this.STORAGE_PREFIX + key;
-      const cached = localStorage.getItem(storageKey);
-      if (!cached) return null;
-
-      const entry: CacheEntry<T> = JSON.parse(cached);
-      if (this.isCacheValid(entry.timestamp)) {
-        return entry.data;
-      }
-      localStorage.removeItem(storageKey);
-      return null;
-    } catch {
-      return null;
-    }
-  }
-
-  private setCacheData<T>(key: string, data: T): void {
-    try {
-      const storageKey = this.STORAGE_PREFIX + key;
-      const entry: CacheEntry<T> = {
-        data,
-        timestamp: Date.now(),
-      };
-      localStorage.setItem(storageKey, JSON.stringify(entry));
-    } catch {}
-  }
+class AniListMangaService extends BaseAniListService {
+  protected readonly STORAGE_PREFIX = "anilist_manga_cache_v2_";
 
   async searchManga(query: string, page: number = 1, perPage: number = 10): Promise<Manga[]> {
     try {
@@ -151,13 +91,13 @@ class AniListMangaService {
 
       const response = await this.client.post<AniListMangaResponse>("", {
         query: `
-          query {
-            Page(page: ${page}, perPage: ${perPage}) {
+          query ($page: Int!, $perPage: Int!, $search: String!) {
+            Page(page: $page, perPage: $perPage) {
               pageInfo {
                 hasNextPage
                 total
               }
-              media(type: MANGA, search: "${query}") {
+              media(type: MANGA, search: $search) {
                 id
                 title {
                   romaji
@@ -178,6 +118,7 @@ class AniListMangaService {
             }
           }
         `,
+        variables: { page, perPage, search: query },
       });
 
       const dataPage = response.data.data.Page;
@@ -199,8 +140,8 @@ class AniListMangaService {
 
       const response = await this.client.post<AniListMangaResponse>("", {
         query: `
-          query {
-            Page(page: ${page}, perPage: ${perPage}) {
+          query ($page: Int!, $perPage: Int!) {
+            Page(page: $page, perPage: $perPage) {
               pageInfo {
                 hasNextPage
                 total
@@ -227,6 +168,7 @@ class AniListMangaService {
             }
           }
         `,
+        variables: { page, perPage },
       });
 
       const dataPage = response.data.data.Page;
@@ -248,8 +190,8 @@ class AniListMangaService {
 
       const response = await this.client.post<AniListMangaResponse>("", {
         query: `
-          query {
-            Page(page: ${page}, perPage: ${perPage}) {
+          query ($page: Int!, $perPage: Int!) {
+            Page(page: $page, perPage: $perPage) {
               pageInfo {
                 hasNextPage
                 total
@@ -276,6 +218,7 @@ class AniListMangaService {
             }
           }
         `,
+        variables: { page, perPage },
       });
 
       const dataPage = response.data.data.Page;
@@ -297,8 +240,8 @@ class AniListMangaService {
 
       const response = await this.client.post<AniListMangaResponse>("", {
         query: `
-          query {
-            Page(page: ${page}, perPage: ${perPage}) {
+          query ($page: Int!, $perPage: Int!) {
+            Page(page: $page, perPage: $perPage) {
               pageInfo {
                 hasNextPage
                 total
@@ -325,6 +268,7 @@ class AniListMangaService {
             }
           }
         `,
+        variables: { page, perPage },
       });
 
       const dataPage = response.data.data.Page;
@@ -365,40 +309,61 @@ class AniListMangaService {
   async searchAdvanced(
     filters: SearchFilters,
     page: number = 1,
-    perPage: number = 15
+    perPage: number = 15,
   ): Promise<Manga[]> {
     try {
       const cacheKey = this.generateCacheKey(
         "advancedSearch",
         page,
         perPage,
-        JSON.stringify(filters)
+        JSON.stringify(filters),
       );
       const cached = this.getCachedData<Manga[]>(cacheKey);
       if (cached) return cached;
 
-      const queryParts = [];
-      if (filters.search) queryParts.push(`search: "${filters.search}"`);
-      if (filters.genre && filters.genre.length > 0) {
-        const genres = filters.genre.map((g) => `"${g}"`).join(", ");
-        queryParts.push(`genre_in: [${genres}]`);
-      }
-      if (filters.year)
-        queryParts.push(
-          `startDate_greater: ${filters.year}0101, startDate_lesser: ${filters.year}1231`
-        );
-      if (filters.format && filters.format.length > 0) {
-        const formats = filters.format.map((f) => `"${f}"`).join(", ");
-        queryParts.push(`format_in: [${formats}]`);
-      }
-      if (filters.status) queryParts.push(`status: ${filters.status}`);
+      const variables: Record<string, unknown> = { page, perPage };
+      const conditions: string[] = [];
+      const variableDefs: string[] = ["$page: Int!", "$perPage: Int!"];
 
-      const filterString = queryParts.length > 0 ? `, ${queryParts.join(", ")}` : "";
+      if (filters.search) {
+        variableDefs.push("$search: String");
+        conditions.push("search: $search");
+        variables.search = filters.search;
+      }
+
+      if (filters.genre && filters.genre.length > 0) {
+        variableDefs.push("$genres: [String]");
+        conditions.push("genre_in: $genres");
+        variables.genres = filters.genre;
+      }
+
+      if (filters.year) {
+        variableDefs.push("$startDateGreater: FuzzyDateInt");
+        variableDefs.push("$startDateLesser: FuzzyDateInt");
+        conditions.push("startDate_greater: $startDateGreater");
+        conditions.push("startDate_lesser: $startDateLesser");
+        variables.startDateGreater = filters.year * 10000 + 101;
+        variables.startDateLesser = filters.year * 10000 + 1231;
+      }
+
+      if (filters.format && filters.format.length > 0) {
+        variableDefs.push("$formats: [MediaFormat]");
+        conditions.push("format_in: $formats");
+        variables.formats = filters.format;
+      }
+
+      if (filters.status) {
+        variableDefs.push("$status: MediaStatus");
+        conditions.push("status: $status");
+        variables.status = filters.status;
+      }
+
+      const filterString = conditions.length > 0 ? `, ${conditions.join(", ")}` : "";
 
       const response = await this.client.post<AniListMangaResponse>("", {
         query: `
-          query {
-            Page(page: ${page}, perPage: ${perPage}) {
+          query (${variableDefs.join(", ")}) {
+            Page(page: $page, perPage: $perPage) {
               pageInfo {
                 hasNextPage
                 total
@@ -427,6 +392,7 @@ class AniListMangaService {
             }
           }
         `,
+        variables,
       });
 
       const dataPage = response.data.data.Page;
@@ -448,8 +414,8 @@ class AniListMangaService {
 
       const response = await this.client.post<AniListMangaResponse>("", {
         query: `
-          query {
-            Media(id: ${id}, type: MANGA) {
+          query ($id: Int!) {
+            Media(id: $id, type: MANGA) {
               id
               title {
                 romaji
@@ -526,6 +492,7 @@ class AniListMangaService {
             }
           }
         `,
+        variables: { id },
       });
 
       if (response.data.data.Media) {
@@ -536,26 +503,6 @@ class AniListMangaService {
     } catch (error) {
       throw this.handleError(error);
     }
-  }
-
-  clearCache(): void {
-    try {
-      const keys = Object.keys(localStorage);
-      keys.forEach((key) => {
-        if (key.startsWith(this.STORAGE_PREFIX)) {
-          localStorage.removeItem(key);
-        }
-      });
-    } catch {}
-  }
-
-  private handleError(error: unknown): AniListError {
-    if (axios.isAxiosError(error)) {
-      const status = error.response?.status || 500;
-      const message = error.response?.data?.errors?.[0]?.message || error.message;
-      return { message, status };
-    }
-    return { message: "An unknown error occurred" };
   }
 }
 

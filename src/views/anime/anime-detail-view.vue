@@ -15,7 +15,7 @@
             <div class="prose prose-gray max-w-none">
               <h3 class="text-xl font-medium text-gray-900 mb-4">Synopsis</h3>
               <div
-                v-html="anime.description"
+                v-html="sanitizedDescription"
                 class="text-gray-600 font-light leading-relaxed"
               ></div>
             </div>
@@ -62,9 +62,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import { useRoute } from "vue-router";
 import { aniListService, type Anime } from "@/services/anilist";
+import { sanitizeHtml } from "@/utils/sanitize";
 import Loader from "@/components/layout/loader.vue";
 import AnimeHeader from "./components/anime-header.vue";
 import AnimeInfo from "./components/anime-info.vue";
@@ -74,6 +75,8 @@ import AnimeRelations from "./components/anime-relations.vue";
 const route = useRoute();
 const loaderRef = ref<InstanceType<typeof Loader>>();
 const anime = ref<Anime | null>(null);
+
+const sanitizedDescription = computed(() => sanitizeHtml(anime.value?.description));
 
 const fetchAnime = async (id: number) => {
   if (loaderRef.value) loaderRef.value.showLoader();
@@ -96,21 +99,6 @@ watch(
   () => route.params.id,
   (newId) => {
     if (newId) fetchAnime(Number(newId));
-  }
+  },
 );
 </script>
-
-<style scoped>
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-</style>

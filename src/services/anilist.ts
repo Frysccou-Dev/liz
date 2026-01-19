@@ -1,10 +1,4 @@
-import axios from "axios";
-import type { AxiosInstance } from "axios";
-
-interface AniListError {
-  message: string;
-  status?: number;
-}
+import { BaseAniListService, type AniListError } from "./base-anilist";
 
 interface Anime {
   id: number;
@@ -90,11 +84,6 @@ interface AniListAnimeResponse {
   };
 }
 
-interface CacheEntry<T> {
-  data: T;
-  timestamp: number;
-}
-
 interface SearchFilters {
   search?: string;
   genre?: string[];
@@ -104,95 +93,8 @@ interface SearchFilters {
   status?: string;
 }
 
-class AniListService {
-  private client: AxiosInstance;
-  private baseURL = import.meta.env.DEV ? "/api" : "https://graphql.anilist.co";
-  private readonly CACHE_DURATION = 30 * 60 * 1000;
-  private readonly STORAGE_PREFIX = "anilist_cache_v3_";
-
-  constructor() {
-    this.client = axios.create({
-      baseURL: this.baseURL,
-      timeout: 10000,
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-  }
-
-  private generateCacheKey(method: string, page: number, perPage: number, search?: string): string {
-    return `${method}:${page}:${perPage}${search ? `:${search}` : ""}`;
-  }
-
-  private isCacheValid(timestamp: number): boolean {
-    return Date.now() - timestamp < this.CACHE_DURATION;
-  }
-
-  private getCachedData<T>(key: string): T | null {
-    try {
-      const storageKey = this.STORAGE_PREFIX + key;
-      const cached = localStorage.getItem(storageKey);
-      if (!cached) return null;
-
-      const entry: CacheEntry<T> = JSON.parse(cached);
-      if (this.isCacheValid(entry.timestamp)) {
-        return entry.data;
-      }
-      localStorage.removeItem(storageKey);
-      return null;
-    } catch {
-      try {
-        localStorage.removeItem(this.STORAGE_PREFIX + key);
-      } catch {
-      }
-      return null;
-    }
-  }
-
-  private setCacheData<T>(key: string, data: T): void {
-    try {
-      const storageKey = this.STORAGE_PREFIX + key;
-      const entry: CacheEntry<T> = {
-        data,
-        timestamp: Date.now(),
-      };
-      localStorage.setItem(storageKey, JSON.stringify(entry));
-    } catch {
-    }
-  }
-
-  private getQueryString(page: number = 1, perPage: number = 10, search?: string): string {
-    const searchFilter = search ? `, search: "${search}"` : "";
-    return `
-      query {
-        Page(page: ${page}, perPage: ${perPage}) {
-          pageInfo {
-            hasNextPage
-            total
-          }
-          media(type: ANIME, isAdult: false${searchFilter}) {
-            id
-            title {
-              romaji
-              english
-              native
-            }
-            coverImage {
-              large
-              medium
-            }
-            description
-            averageScore
-            popularity
-            episodes
-            season
-            seasonYear
-            status
-          }
-        }
-      }
-    `;
-  }
+class AniListService extends BaseAniListService {
+  protected readonly STORAGE_PREFIX = "anilist_cache_v4_";
 
   async searchAnime(query: string, page: number = 1, perPage: number = 10): Promise<Anime[]> {
     try {
@@ -201,7 +103,36 @@ class AniListService {
       if (cached) return cached;
 
       const response = await this.client.post<AniListAnimeResponse>("", {
-        query: this.getQueryString(page, perPage, query),
+        query: `
+          query ($page: Int!, $perPage: Int!, $search: String!) {
+            Page(page: $page, perPage: $perPage) {
+              pageInfo {
+                hasNextPage
+                total
+              }
+              media(type: ANIME, isAdult: false, search: $search) {
+                id
+                title {
+                  romaji
+                  english
+                  native
+                }
+                coverImage {
+                  large
+                  medium
+                }
+                description
+                averageScore
+                popularity
+                episodes
+                season
+                seasonYear
+                status
+              }
+            }
+          }
+        `,
+        variables: { page, perPage, search: query },
       });
 
       const dataPage = response.data.data.Page;
@@ -223,8 +154,8 @@ class AniListService {
 
       const response = await this.client.post<AniListAnimeResponse>("", {
         query: `
-          query {
-            Page(page: ${page}, perPage: ${perPage}) {
+          query ($page: Int!, $perPage: Int!) {
+            Page(page: $page, perPage: $perPage) {
               pageInfo {
                 hasNextPage
                 total
@@ -251,6 +182,7 @@ class AniListService {
             }
           }
         `,
+        variables: { page, perPage },
       });
 
       const dataPage = response.data.data.Page;
@@ -266,19 +198,20 @@ class AniListService {
 
   async getPopularThisSeason(page: number = 1, perPage: number = 6): Promise<Anime[]> {
     try {
-      const cacheKey = this.generateCacheKey("popularSeason", page, perPage);
+      const { season, year } = BaseAniListService.getCurrentSeason();
+      const cacheKey = this.generateCacheKey("popularSeason", page, perPage, `${season}_${year}`);
       const cached = this.getCachedData<Anime[]>(cacheKey);
       if (cached) return cached;
 
       const response = await this.client.post<AniListAnimeResponse>("", {
         query: `
-          query {
-            Page(page: ${page}, perPage: ${perPage}) {
+          query ($page: Int!, $perPage: Int!, $season: MediaSeason!, $seasonYear: Int!) {
+            Page(page: $page, perPage: $perPage) {
               pageInfo {
                 hasNextPage
                 total
               }
-              media(type: ANIME, isAdult: false, season: FALL, seasonYear: 2025, sort: POPULARITY_DESC) {
+              media(type: ANIME, isAdult: false, season: $season, seasonYear: $seasonYear, sort: POPULARITY_DESC) {
                 id
                 title {
                   romaji
@@ -301,6 +234,7 @@ class AniListService {
             }
           }
         `,
+        variables: { page, perPage, season, seasonYear: year },
       });
 
       const dataPage = response.data.data.Page;
@@ -322,8 +256,8 @@ class AniListService {
 
       const response = await this.client.post<AniListAnimeResponse>("", {
         query: `
-          query {
-            Page(page: ${page}, perPage: ${perPage}) {
+          query ($page: Int!, $perPage: Int!) {
+            Page(page: $page, perPage: $perPage) {
               pageInfo {
                 hasNextPage
                 total
@@ -351,6 +285,7 @@ class AniListService {
             }
           }
         `,
+        variables: { page, perPage },
       });
 
       const dataPage = response.data.data.Page;
@@ -366,19 +301,20 @@ class AniListService {
 
   async getUpcomingNextSeason(page: number = 1, perPage: number = 6): Promise<Anime[]> {
     try {
-      const cacheKey = this.generateCacheKey("upcoming", page, perPage);
+      const { season, year } = BaseAniListService.getNextSeason();
+      const cacheKey = this.generateCacheKey("upcoming", page, perPage, `${season}_${year}`);
       const cached = this.getCachedData<Anime[]>(cacheKey);
       if (cached) return cached;
 
       const response = await this.client.post<AniListAnimeResponse>("", {
         query: `
-          query {
-            Page(page: ${page}, perPage: ${perPage}) {
+          query ($page: Int!, $perPage: Int!, $season: MediaSeason!, $seasonYear: Int!) {
+            Page(page: $page, perPage: $perPage) {
               pageInfo {
                 hasNextPage
                 total
               }
-              media(type: ANIME, isAdult: false, season: WINTER, seasonYear: 2026, sort: POPULARITY_DESC) {
+              media(type: ANIME, isAdult: false, season: $season, seasonYear: $seasonYear, sort: POPULARITY_DESC) {
                 id
                 title {
                   romaji
@@ -401,6 +337,7 @@ class AniListService {
             }
           }
         `,
+        variables: { page, perPage, season, seasonYear: year },
       });
 
       const dataPage = response.data.data.Page;
@@ -422,8 +359,8 @@ class AniListService {
 
       const response = await this.client.post<AniListAnimeResponse>("", {
         query: `
-          query {
-            Page(page: ${page}, perPage: ${perPage}) {
+          query ($page: Int!, $perPage: Int!) {
+            Page(page: $page, perPage: $perPage) {
               pageInfo {
                 hasNextPage
                 total
@@ -451,6 +388,7 @@ class AniListService {
             }
           }
         `,
+        variables: { page, perPage },
       });
 
       const dataPage = response.data.data.Page;
@@ -472,8 +410,8 @@ class AniListService {
 
       const response = await this.client.post<AniListAnimeResponse>("", {
         query: `
-          query {
-            Page(page: ${page}, perPage: ${perPage}) {
+          query ($page: Int!, $perPage: Int!) {
+            Page(page: $page, perPage: $perPage) {
               pageInfo {
                 hasNextPage
                 total
@@ -500,6 +438,7 @@ class AniListService {
             }
           }
         `,
+        variables: { page, perPage },
       });
 
       const dataPage = response.data.data.Page;
@@ -537,63 +476,69 @@ class AniListService {
     }
   }
 
-  clearCache(): void {
-    try {
-      const keys = Object.keys(localStorage);
-      keys.forEach((key) => {
-        if (key.startsWith(this.STORAGE_PREFIX)) {
-          localStorage.removeItem(key);
-        }
-      });
-    } catch {
-    }
-  }
-
-  private handleError(error: unknown): AniListError {
-    if (axios.isAxiosError(error)) {
-      const status = error.response?.status || 500;
-      const message = error.response?.data?.errors?.[0]?.message || error.message;
-      return { message, status };
-    }
-    return { message: "An unknown error occurred" };
-  }
   async searchAdvanced(
     filters: SearchFilters,
     page: number = 1,
-    perPage: number = 15
+    perPage: number = 15,
   ): Promise<Anime[]> {
     try {
       const cacheKey = this.generateCacheKey(
         "advancedSearch",
         page,
         perPage,
-        JSON.stringify(filters)
+        JSON.stringify(filters),
       );
       const cached = this.getCachedData<Anime[]>(cacheKey);
       if (cached) return cached;
 
-      const queryParts = [];
-      if (filters.search) queryParts.push(`search: "${filters.search}"`);
-      if (filters.genre && filters.genre.length > 0) {
-        const genres = filters.genre.map((g) => `"${g}"`).join(", ");
-        queryParts.push(`genre_in: [${genres}]`);
-      } else {
-        queryParts.push(`genre_not_in: ["Hentai"]`);
-      }
-      if (filters.year) queryParts.push(`seasonYear: ${filters.year}`);
-      if (filters.season) queryParts.push(`season: ${filters.season}`);
-      if (filters.format && filters.format.length > 0) {
-        const formats = filters.format.map((f) => `"${f}"`).join(", ");
-        queryParts.push(`format_in: [${formats}]`);
-      }
-      if (filters.status) queryParts.push(`status: ${filters.status}`);
+      const variables: Record<string, unknown> = { page, perPage };
+      const conditions: string[] = [];
+      const variableDefs: string[] = ["$page: Int!", "$perPage: Int!"];
 
-      const filterString = queryParts.length > 0 ? `, ${queryParts.join(", ")}` : "";
+      if (filters.search) {
+        variableDefs.push("$search: String");
+        conditions.push("search: $search");
+        variables.search = filters.search;
+      }
+
+      if (filters.genre && filters.genre.length > 0) {
+        variableDefs.push("$genres: [String]");
+        conditions.push("genre_in: $genres");
+        variables.genres = filters.genre;
+      } else {
+        conditions.push('genre_not_in: ["Hentai"]');
+      }
+
+      if (filters.year) {
+        variableDefs.push("$seasonYear: Int");
+        conditions.push("seasonYear: $seasonYear");
+        variables.seasonYear = filters.year;
+      }
+
+      if (filters.season) {
+        variableDefs.push("$season: MediaSeason");
+        conditions.push("season: $season");
+        variables.season = filters.season;
+      }
+
+      if (filters.format && filters.format.length > 0) {
+        variableDefs.push("$formats: [MediaFormat]");
+        conditions.push("format_in: $formats");
+        variables.formats = filters.format;
+      }
+
+      if (filters.status) {
+        variableDefs.push("$status: MediaStatus");
+        conditions.push("status: $status");
+        variables.status = filters.status;
+      }
+
+      const filterString = conditions.length > 0 ? `, ${conditions.join(", ")}` : "";
 
       const response = await this.client.post<AniListAnimeResponse>("", {
         query: `
-          query {
-            Page(page: ${page}, perPage: ${perPage}) {
+          query (${variableDefs.join(", ")}) {
+            Page(page: $page, perPage: $perPage) {
               pageInfo {
                 hasNextPage
                 total
@@ -623,6 +568,7 @@ class AniListService {
             }
           }
         `,
+        variables,
       });
 
       const dataPage = response.data.data.Page;
@@ -635,6 +581,7 @@ class AniListService {
       throw this.handleError(error);
     }
   }
+
   async getAnimeById(id: number): Promise<Anime> {
     try {
       const cacheKey = this.generateCacheKey("anime_detail", id, 1);
@@ -643,8 +590,8 @@ class AniListService {
 
       const response = await this.client.post<AniListAnimeResponse>("", {
         query: `
-          query {
-            Media(id: ${id}, type: ANIME) {
+          query ($id: Int!) {
+            Media(id: $id, type: ANIME) {
               id
               title {
                 romaji
@@ -733,6 +680,7 @@ class AniListService {
             }
           }
         `,
+        variables: { id },
       });
 
       if (response.data.data.Media) {
