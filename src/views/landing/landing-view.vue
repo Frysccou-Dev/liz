@@ -132,7 +132,9 @@
               <ArrowRightIcon class="w-4 h-4" />
             </router-link>
           </div>
-          <div class="aspect-video bg-gray-100 rounded-2xl"></div>
+          <div class="aspect-video bg-gray-100 rounded-2xl overflow-hidden">
+            <img src="/images/boysabbys.jpg" alt="Anime preview" class="w-full h-full object-cover" />
+          </div>
         </div>
       </div>
     </section>
@@ -140,7 +142,9 @@
     <section class="py-32 px-6 bg-gray-50">
       <div class="max-w-6xl mx-auto">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-          <div class="order-2 lg:order-1 aspect-video bg-gray-200 rounded-2xl"></div>
+          <div class="order-2 lg:order-1 aspect-video bg-gray-200 rounded-2xl overflow-hidden">
+            <img src="/images/mio.jpg" alt="Manga preview" class="w-full h-full object-cover" />
+          </div>
           <div class="order-1 lg:order-2">
             <span class="text-xs uppercase tracking-[0.3em] text-gray-400 mb-6 block">Manga</span>
             <h2 class="text-3xl md:text-4xl font-light text-gray-900 mb-6">

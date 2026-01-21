@@ -424,6 +424,7 @@ class AniListService extends BaseAniListService {
                   native
                 }
                 coverImage {
+                  extraLarge
                   large
                   medium
                 }
